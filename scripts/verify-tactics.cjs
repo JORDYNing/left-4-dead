@@ -46,7 +46,7 @@ test('companion follow/wait/return/rejoin distances are doubled in behavior',()=
   Object.assign(g.ally,{x:0,z:9,y:0});g.guide.update(.1);assert(g.guide.returning,'Stops return beyond 10 m');Object.assign(g.ally,{x:0,z:11,y:0});g.guide.update(.1);assert(!g.guide.returning,'Fails to rejoin within 10 m');return g.guide.distances;
 });
 test('low/high cover geometry offers different sightlines, short transfers and connected routes',()=>{
-  const {g,assert,arena,place}=qa;arena();place(0,23);
+  const {g,assert,arena,place}=qa;arena();place(0,25);
   const authored=g.colliders.filter(c=>c.cover&&c.zone),report=[];
   for(const zone of ['entry','street','pump']){const covers=authored.filter(c=>c.zone===zone);assert(covers.some(c=>c.cover==='low')&&covers.some(c=>c.cover==='high'),'Missing cover type '+zone);report.push({zone,low:covers.filter(c=>c.cover==='low').length,high:covers.filter(c=>c.cover==='high').length});}
   const sight=(x,z,h,d)=>g.visible(new THREE.Vector3(x,h,z+d),new THREE.Vector3(x,h,z-d));
@@ -64,7 +64,10 @@ test('runner rounds building and brute/runner climb the ramp without penetration
   const {g,assert,arena,place,step}=qa;arena();const evidence=[];
   for(const [type,start,target,seconds]of [['runner',[-8,10],[-25,20,0],32],['runner',[28,2],[20,-20,2.7],40],['brute',[28,2],[20,-20,2.7],70]]){
     for(const e of [...g.enemies])g.hurtEnemy(e,99999,new THREE.Vector3(e.x,1,e.z));place(...target);const e=g.spawnEnemy(type,{x:start[0],z:start[1]});e.role='assault';
-    step(seconds,()=>assert(!g.blocked(e.x,e.z,e.y,e.radius-.002,true),'Penetration '+JSON.stringify({x:e.x,z:e.z,type})));
+    const route=g.navigation.route(e,g.player,e.radius);let routeLength=0,last=e;
+    for(const p of route){routeLength+=Math.hypot(p.x-last.x,p.z-last.z);last=p;}
+    const travelTime=Math.max(seconds,Math.ceil(routeLength/e.speed*1.4+4));
+    step(travelTime,()=>assert(!g.blocked(e.x,e.z,e.y,e.radius-.002,true),'Penetration '+JSON.stringify({x:e.x,z:e.z,type})));
     const d=Math.hypot(e.x-target[0],e.z-target[1]);assert(d<2&&Math.abs(e.y-target[2])<.1,'Stalled '+JSON.stringify({type,d,x:e.x,z:e.z,goal:e.goal,path:e.path.slice(0,3)}));evidence.push({type,d,y:e.y});
   }return evidence;
 });

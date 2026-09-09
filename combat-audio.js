@@ -96,6 +96,10 @@ export function createCombatAudio({isEnabled = () => true, context = null} = {})
         const level=.12*Math.min(1,10/Math.max(1,options.distance||1));
         tone(t,.38,level,175,58,'sawtooth',options.pan||0);hiss(t,.4,level,600,160,'bandpass',options.pan||0,2);
       }
+      else if (kind === 'explosion') {
+        tone(t,.65,.3,95,24);hiss(t,.55,.35,1800,110,'lowpass');
+        hiss(t+.035,.22,.16,3600,700,'bandpass');
+      } else if (kind === 'swish') hiss(t,.18,.09,1600,450,'bandpass');
       else if (kind === 'step') hiss(t, .105, .075, 290, 95, 'lowpass');
       else if (kind === 'casing') {
         tone(t, .055, .018, 3100, 2400, 'triangle', .5);

@@ -21,7 +21,8 @@ const suite=function(){
     reset();g.ally.hp=0;g.player.z=30.5;step(1);assert(g.enemies.length>=1,'First enemy late');step(2.5);assert(g.enemies.length===12&&g.state.pending===0,'First wave too slow');return {time:g.state.time,enemies:g.enemies.length};
   });
   test('guide leads, waits, then resumes without advancing objectives early',()=>{
-    reset();g.openGate();g.state.between=999;Object.assign(g.player,{x:0,z:25,y:0});Object.assign(g.ally,{x:1,z:24,y:0});
+    reset();g.openGate();g.state.between=999;Object.assign(g.player,{x:0,z:25,y:0});Object.assign(g.ally,{x:1,z:25,y:0});
+    assert(!g.blocked(g.ally.x,g.ally.z,g.ally.y,.52,true),'Guide fixture overlaps the entrance wall');
     step(8);assert(g.guide.status==='等你跟上','Guide did not wait: '+g.guide.status);const p={x:g.ally.x,z:g.ally.z};step(3);
     assert(Math.hypot(g.ally.x-p.x,g.ally.z-p.z)<.05,'Guide ran away while waiting');assert(g.guide.stage===0,'Player never reached clinic');
     Object.assign(g.player,{x:g.ally.x,z:g.ally.z+1,y:g.ally.y});step(.5);assert(Math.hypot(g.ally.x-p.x,g.ally.z-p.z)>.4,'Guide failed to resume');return {waitDistance:Math.hypot(p.x,p.z-25)};
@@ -35,11 +36,15 @@ const suite=function(){
       const p=trail[0],gap=Math.hypot(g.ally.x-g.player.x,g.ally.z-g.player.z);
       if(p&&gap>2){const dx=p.x-g.player.x,dz=p.z-g.player.z,len=Math.hypot(dx,dz);if(len>.001)g.move(g.player,dx/len*Math.min(len,3.7/60),dz/len*Math.min(len,3.7/60));g.player.y=g.floorAt(g.player.x,g.player.z);}
       const before=g.guide.stage;g.simulate(1/60);maxGap=Math.max(maxGap,gap);climbed ||= g.player.y>2.6;
+      if(i%12===0)g.updateUI();
       if(g.guide.stage!==before)visited.push({stage:g.guide.stage,player:[g.player.x,g.player.y,g.player.z],ally:[g.ally.x,g.ally.y,g.ally.z]});
       assert(!g.blocked(g.ally.x,g.ally.z,g.ally.y,.3,false),'Ally walked into a wall');
     }
     assert(g.guide.complete&&visited.length===3,'Route stalled: '+JSON.stringify({stage:g.guide.stage,status:g.guide.status,ally:[g.ally.x,g.ally.y,g.ally.z],player:[g.player.x,g.player.y,g.player.z],path:g.guide.path.slice(0,3)}));
-    assert(climbed,'Player never climbed ammunition ramp');return {visited,maxGap,seconds:g.state.time};
+    g.updateUI();assert(climbed,'Player never climbed ammunition ramp');
+    const lines=g.guidance.history.map(l=>l.key);
+    for(const key of ['left','clinic-door','clinic','ammo','pump'])assert(lines.includes(key),'Missing dialogue during real traversal: '+key);
+    return {visited,maxGap,seconds:g.state.time,dialogue:lines};
   });
   test('visible held shotgun fires from muzzle toward an enemy with a tracer and recoil',()=>{
     reset();g.openGate();g.state.between=999;Object.assign(g.player,{x:0,z:20,y:0});Object.assign(g.ally,{x:2,z:20,y:0});

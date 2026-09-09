@@ -404,17 +404,28 @@
       }
       #objective {
         position: absolute;
-        top: 30px;
+        top: 26px;
         left: 30px;
         font-size: 12px;
         color: #dce5dc;
-        max-width: 320px;
+        width: 300px;
+        max-width: calc(100vw - 175px);
+        padding: 12px 15px;
+        border-left: 2px solid var(--orange);
+        background: linear-gradient(90deg, #10201ff0, #10201f80);
       }
-      #objective:before {
-        content: "◇";
-        color: var(--orange);
-        margin-right: 9px;
-      }
+      #objective-step {display:block;font-size:10px;letter-spacing:1.5px;color:var(--orange);margin-bottom:6px;}
+      .objective-heading {display:flex;align-items:baseline;justify-content:space-between;gap:10px;}
+      #objective-title {font-size:20px;font-weight:650;}
+      #objective-distance {font:12px monospace;color:#f0c597;white-space:nowrap;}
+      #objective-detail {font-size:12px;line-height:1.65;color:#c0d2c9;margin:7px 0 11px;}
+      #objective-progress {display:flex;gap:12px;font-size:10px;color:#84958e;}
+      #objective-progress span:before {content:'○';margin-right:4px;}
+      #objective-progress [data-state="done"] {color:#9bcdad;}
+      #objective-progress [data-state="done"]:before {content:'✓';}
+      #objective-progress [data-state="current"] {color:#f0c597;}
+      #objective-progress [data-state="current"]:before {content:'◆';}
+      #objective[data-urgent="true"] {border-color:#ef937a;}
       #minimap {
         position: absolute;
         right: 30px;
@@ -604,7 +615,30 @@
       #flashlight-tip {position:absolute;bottom:32%;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:8px;padding:10px 16px;border:1px solid #c6b58e66;background:#101c23ec;color:#ecdfbb;box-shadow:0 8px 35px #0005;pointer-events:none;}
       #flashlight-tip[hidden],#waypoint[hidden] {display:none;}
       #flashlight-tip kbd {border:1px solid #ccb888;margin-right:0;}
-      #waypoint {position:absolute;transform:translate(-50%,-50%);color:#c8e8df;text-shadow:0 2px 6px #000;background:#102224b5;border-bottom:1px solid #81b6b2;padding:6px 11px;font-size:12px;pointer-events:none;}
+      #waypoint {position:absolute;transform:translate(-50%,-50%);display:flex;align-items:center;gap:10px;color:#fae3c4;text-shadow:0 2px 6px #000;background:#102224ed;border-bottom:2px solid #edb47f;padding:9px 12px;font-size:13px;pointer-events:none;white-space:nowrap;}
+      #waypoint-icon {font:25px/1 sans-serif;color:#f1bd80;}
+      #waypoint-label {display:block;font-weight:600;}
+      #waypoint-distance {display:block;font:11px/1.6 monospace;color:#c1d2c9;margin-top:2px;}
+      #companion-dialogue {position:absolute;bottom:21%;left:50%;transform:translateX(-50%);display:flex;align-items:baseline;gap:12px;width:max-content;max-width:min(660px,calc(100vw - 48px));padding:12px 18px;background:#101c20eb;border-left:2px solid #9ac6b4;font-size:15px;line-height:1.65;text-align:left;}
+      #companion-dialogue b {color:#a9d3bd;font-size:12px;white-space:nowrap;}
+      #companion-line {color:#f1eee3;}
+      #interact {font-size:14px;border-color:#dab186;}
+      #player-prompts {position:absolute;bottom:21%;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:12px;width:min(660px,calc(100vw - 48px));}
+      #player-prompts > div {position:static;transform:none;max-width:100%;}
+      @media(max-width:700px) {#objective {padding:9px 11px;}#objective-title {font-size:16px;}#objective-detail {font-size:11px;}#objective-progress {gap:8px;}#companion-dialogue {font-size:13px;bottom:24%;}#waypoint {font-size:12px;padding:7px 9px;}}
+      #tutorial-task {margin-top:12px;padding-top:10px;border-top:1px solid #9ac6b440;max-width:360px;}
+      #tutorial-label {display:block;color:#efc694;font-size:12px;letter-spacing:.03em;}
+      #tutorial-detail {margin:5px 0;color:#e4e8df;font-size:12px;line-height:1.5;}
+      #tutorial-reward {font-size:11px;color:#abcabb;}
+      #tutorial-task[data-complete="true"] #tutorial-label {color:#abcabb;}
+      #equipment {display:flex;gap:12px;margin-bottom:12px;flex-wrap:wrap;justify-content:flex-end;max-width:380px;font-size:12px;color:#dce4d8;}
+      #equipment span {white-space:nowrap;} #equipment kbd {margin-right:4px;}
+      #equipment b {font:11px monospace;color:#e9c799;}
+      #equipment [data-empty="true"] {opacity:.45;}
+      #reward-notice {padding:12px 20px;background:#15241fee;border:1px solid #b4c6a97a;color:#f1e5c8;font-size:14px;text-align:center;}
+      #smoke-screen {position:fixed;inset:0;pointer-events:none;background:#606b67;opacity:0;transition:opacity .2s;}
+      #tutorial-task[hidden],#equipment[hidden],#reward-notice[hidden] {display:none;}
+      @media(max-width:700px) {#equipment {max-width:220px;gap:6px;font-size:11px;}#tutorial-task {max-width:275px;}}
     </style>
   </head>
   <body>
@@ -643,6 +677,7 @@
         </div>
       </footer>
     </div>
+    <div id="smoke-screen" aria-hidden="true"></div>
     <div id="hud">
       <div class="hud-top">
         <div class="wave-box">
@@ -653,7 +688,13 @@
           </div>
         </div>
       </div>
-      <div id="objective">跟随林</div>
+      <div id="objective">
+        <span id="objective-step">准备出发</span>
+        <div class="objective-heading"><strong id="objective-title" role="status">离开安全屋</strong><span id="objective-distance"></span></div>
+        <p id="objective-detail">向前靠近出口，出门后左转</p>
+        <div id="objective-progress" aria-label="补给路线"><span>诊所</span><span>弹药平台</span><span>泵站</span></div>
+        <div id="tutorial-task" hidden><strong id="tutorial-label"></strong><p id="tutorial-detail"></p><span id="tutorial-reward"></span></div>
+      </div>
       <canvas
         id="minimap"
         width="174"
@@ -666,10 +707,14 @@
       <div id="hitmarker" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
       <div id="kill-confirm" aria-hidden="true"></div>
       <div id="toast"></div>
-      <div id="interact" hidden></div>
       <div id="reload" hidden>换弹</div>
-      <div id="flashlight-tip" hidden><kbd>F</kbd>手电</div>
-      <div id="waypoint" hidden></div>
+      <div id="waypoint" hidden aria-hidden="true"><span id="waypoint-icon">◇</span><div><b id="waypoint-label"></b><small id="waypoint-distance"></small></div></div>
+      <div id="player-prompts">
+        <div id="reward-notice" hidden role="status"></div>
+        <div id="flashlight-tip" hidden><kbd>F</kbd>手电</div>
+        <div id="interact" hidden></div>
+        <div id="companion-dialogue" hidden role="status"><b>林</b><span id="companion-line"></span></div>
+      </div>
       <div class="bottom-left">
         <div class="partner">
           <div class="avatar">林</div>
@@ -689,6 +734,12 @@
         </div>
       </div>
       <div class="bottom-right">
+        <div id="equipment" hidden aria-label="随身装备">
+          <span><kbd>V</kbd>匕首 <b id="count-knife">未获得</b></span>
+          <span><kbd>Q</kbd>医疗包 <b id="count-medkit">0</b></span>
+          <span><kbd>G</kbd>烟雾弹 <b id="count-smoke">0</b></span>
+          <span><kbd>T</kbd>手雷 <b id="count-grenade">0</b></span>
+        </div>
         <div class="ammo">
           <b id="ammo">30</b><em>/</em><span id="reserve">180</span>
         </div>
@@ -709,6 +760,10 @@
         <div><kbd>E</kbd>互动</div>
         <div><kbd>右键</kbd>瞄准</div>
         <div><kbd>F</kbd>手电</div>
+        <div><kbd>V</kbd>匕首近战</div>
+        <div><kbd>Q</kbd>使用医疗包</div>
+        <div><kbd>G</kbd>投掷烟雾弹</div>
+        <div><kbd>T</kbd>投掷手雷</div>
         <div><kbd>Esc</kbd>暂停</div>
         <div><kbd>H</kbd>提示</div>
       </div>
@@ -742,6 +797,9 @@
     <script src="navigation.js"></script>
     <script src="tactics.js"></script>
     <script src="guide.js"></script>
+    <script src="guidance.js"></script>
+    <script src="equipment.js"></script>
+    <script src="tutorial.js"></script>
     <script>
       (async function loadEngine() {
         if (location.protocol === 'file:') {
@@ -1107,6 +1165,19 @@
         wall(-21, 3, 4, 0.5, 4);
         wall(-30, -19, 8, 0.5, 4);
         wall(-21, -19, 4, 0.5, 4);
+        // One continuous approach: leave the safehouse, turn left, then enter the clinic.
+        // Full-height walls join existing buildings so neither jumping nor an outer alley
+        // can bypass the first supply stop. The street beyond the clinic stays connected.
+        wall(-7.5, 23.1, 22, 0.8, 4.7);
+        wall(3.5, 25.2, 0.8, 4.4, 4.7);
+        wall(-23.5, 27, 27, 0.6, 4.7);
+        wall(-31, 15, 0.8, 24.6, 4.7);
+        wall(-18.25, 3, 1.6, 0.6, 4.7);
+        // A sealed shutter makes the blocked street read as part of the ruined district.
+        box(0, 1.9, 23.55, 5.4, 3.8, 0.1, "#414b48");
+        for (let y = 0.25; y < 3.8; y += 0.3)
+          box(0, y, 23.62, 5.3, 0.045, 0.04, "#68736a");
+        box(-7.5, 4.76, 23.1, 22.2, 0.12, 1, "#5b685e");
         box(-26.5, 0.035, -8, 15, 0.06, 22, "#8d9988");
         sign("+ 医疗", -26, 3.6, 3.3, 8, 1, "#dce4cc", "#507967");
         box(-32, 0.45, -8, 2, 0.9, 6, "#657c70", true);
@@ -1605,7 +1676,9 @@
             distance = delta.length();
           return !obstruction(a, delta.normalize(), distance - 0.08);
         }
-        const tactics = createEnemyTactics({T, player, ally, enemies, colliders, navigation, floorAt, visible, state, toast, audio:combat.audio});
+        let equipment, tutorial;
+        function canSee(a,b) { return visible(a,b)&&!equipment?.smokeBetween(a,b); }
+        const tactics = createEnemyTactics({T, player, ally, enemies, colliders, navigation, floorAt, visible:canSee, state, toast, audio:combat.audio});
         const chooseSpawn = radius => tactics.chooseSpawn(radius);
         function spawnEnemy(type, where) {
           const cfg = types[type];
@@ -1654,15 +1727,16 @@
           enemies.push(e);
           return e;
         }
-        function hurtEnemy(e, damage, point, byAlly = false, headshot = false, shotDirection = null) {
+        function hurtEnemy(e, damage, point, byAlly = false, headshot = false, shotDirection = null, damageKind = "direct") {
           if (e.hp <= 0) return;
           const source = byAlly ? ally : player;
           const direction = shotDirection || v3(e.x - source.x, 0, e.z - source.z).normalize();
           // Armored guards brace toward incoming fire; head and rear hits stay fully effective.
           const facing=v3(-Math.sin(e.g.rotation.y),0,-Math.cos(e.g.rotation.y));
-          if(e.type==='guard'&&!headshot&&facing.dot(direction)<-.45)damage=Math.round(damage*.58);
+          if(damageKind!=='explosive'&&e.type==='guard'&&!headshot&&facing.dot(direction)<-.45)damage=Math.round(damage*.58);
           tactics.hurt(e,source,damage);
           e.hp -= damage;
+          if(!byAlly)tutorial.record("hit");
           e.flash = 0.12;
           e.bodyMat.emissive.set("#6b3425");
           const lethal = e.hp <= 0;
@@ -1698,7 +1772,7 @@
               state.kills++;
               state.score += types[e.type].points;
             }
-            if (!byAlly && Math.random() < 0.12) player.reserve = Math.min(240, player.reserve + 8);
+            if (!byAlly && Math.random() < 0.12 && player.reserve < 240) player.reserve = Math.min(240, player.reserve + 8);
           }
         }
         const bloodPools=Array.from({length:20},()=>{
@@ -1723,7 +1797,7 @@
           }
         }
         function shoot() {
-          if (state.mode !== 'playing' || player.sprinting || player.reload > 0 || player.fire > 0) return;
+          if (state.mode !== 'playing' || equipment.busy > 0 || player.sprinting || player.reload > 0 || player.fire > 0) return;
           if (player.ammo <= 0) {
             player.fire = 0.3;
             sound("dry");
@@ -1760,7 +1834,7 @@
           if (targetHit) {
             const target = targetHit.object.userData.targetParent || (targetHit.object.userData.target ? targetHit.object : null);
             if (target) {
-              target.material.color.set("#acd693"); target.userData.reset = .7; state.training++;
+              target.material.color.set("#acd693"); target.userData.reset = .7; state.training++; tutorial.record("hit");
               combat.targetHit();
               burst(targetHit.point, 4);
             } else {
@@ -1782,7 +1856,7 @@
           ui["ammo-hint"].textContent = "R 换弹";
         }
         function reload() {
-          if (player.reload > 0 || player.ammo === 30 || player.reserve <= 0)
+          if (state.mode !== "playing" || equipment.busy > 0 || player.reload > 0 || player.ammo === 30 || player.reserve <= 0)
             return;
           player.reload = 1.85;
           sound("reload");
@@ -1795,7 +1869,7 @@
           if (player.hp <= 0) endGame();
         }
         function interact() {
-          if (!nearby) return;
+          if (state.mode !== "playing" || equipment.busy > 0 || !nearby) return;
           if (nearby === ally) {
             ally.hp = 65;
             ally.down = 0;
@@ -1803,13 +1877,14 @@
             return;
           }
           const s = nearby;
+          if(s.type==='ammo'&&s.y===2.7)tutorial.record('ammoBox');
           if (state.time < s.ready) return;
           if (s.type === "ammo") {
             if (player.reserve >= 240 && player.ammo === 30) {
               toast("弹药已满");
               return;
             }
-            player.reserve = 240;
+            player.reserve = Math.max(240, player.reserve);
             player.ammo = 30;
             player.reload = 0;
             s.ready = state.time + 18;
@@ -1926,6 +2001,11 @@
           }
         }
         const guide = createGuide({T, scene, player, ally, state, blocked, floorAt, move, toast, navigation});
+        equipment = createEquipment({T, state, player, scene, weaponScene, gun, camera, colliders, floorAt,
+          obstruction, visible, enemies, targets, barriers, hurtEnemy, damageBarrier, combat, burst, updateCamera,
+          toast, sound, onEvent:event=>tutorial.record(event), onNoise:position=>tactics.hearShot(position)});
+        tutorial = createTutorial({state, player, ally, guide, equipment, sound});
+        const guidance = createGuidance({T, player, ally, state, guide, navigation, floorAt, visible, supplies, flashlight, camera, tutorial});
         const allyTracer = new T.Line(new T.BufferGeometry().setFromPoints([v3(), v3()]),
           new T.LineBasicMaterial({color:'#f3cf8b',transparent:true,opacity:.8}));
         allyTracer.visible=false;allyTracer.frustumCulled=false;scene.add(allyTracer);
@@ -1947,12 +2027,12 @@
           ally.g.position.set(ally.x, ally.y, ally.z);
           allyLabel.rotation.y = player.yaw - ally.g.rotation.y;
           // Keep the whole weapon and both hands aligned while acquiring and firing at a target.
-          if (ally.target && (ally.target.hp <= 0 || Math.hypot(ally.target.x-ally.x,ally.target.z-ally.z)>22)) ally.target=null;
+          if (ally.target && (ally.target.hp <= 0 || Math.hypot(ally.target.x-ally.x,ally.target.z-ally.z)>22 || !canSee(v3(ally.x,ally.y+1.5,ally.z),v3(ally.target.x,ally.target.y+1.3,ally.target.z)))) ally.target=null;
           if (ally.cool <= 0) {
             ally.target = enemies
               .filter(e=>Math.hypot(e.x-ally.x,e.z-ally.z)<22)
               .sort((a,b)=>Math.hypot(a.x-ally.x,a.z-ally.z)-Math.hypot(b.x-ally.x,b.z-ally.z))
-              .find(e=>visible(v3(ally.x,ally.y+1.5,ally.z),v3(e.x,e.y+1.3,e.z))) || null;
+              .find(e=>canSee(v3(ally.x,ally.y+1.5,ally.z),v3(e.x,e.y+1.3,e.z))) || null;
           }
           if (ally.target) {
             const e=ally.target,range=Math.hypot(e.x-ally.x,e.z-ally.z);
@@ -1966,7 +2046,7 @@
             if (enemy) {
               ally.g.updateMatrixWorld(true);
               const muzzle=ally.muzzle.getWorldPosition(v3()),hit=v3(enemy.x,enemy.y+1.3*types[enemy.type].scale,enemy.z);
-              if (visible(muzzle,hit)) {
+              if (canSee(muzzle,hit)) {
                 ally.cool = state.wave===1 ? 1.1 : .7;
                 ally.shot = .095;ally.flash.visible=true;allyTracer.visible=true;
                 const a=allyTracer.geometry.attributes.position;a.setXYZ(0,muzzle.x,muzzle.y,muzzle.z);a.setXYZ(1,hit.x,hit.y,hit.z);a.needsUpdate=true;
@@ -1987,7 +2067,7 @@
         }
         function toggleFlashlight() {
           flashlight.visible=!flashlight.visible;
-          if(flashlight.visible)state.flashlightUsed=true;
+          if(flashlight.visible){state.flashlightUsed=true;tutorial.record('light');}
           updateUI();
         }
         function updatePlayer(dt) {
@@ -1999,6 +2079,7 @@
               player.ammo += n;
               player.reserve -= n;
               sound("reloadEnd");
+              if(n>0)tutorial.record("reload");
             }
           }
           let x = (keys.has("KeyD") ? 1 : 0) - (keys.has("KeyA") ? 1 : 0),
@@ -2163,10 +2244,11 @@
                   : "#eba267";
             c.fillRect(s.x - 1, s.z - 1, 2, 2);
           }
-          if(state.gate&&!guide.complete){
-            c.strokeStyle='#78b9b5';c.lineWidth=.7;c.setLineDash([1.5,1.5]);c.beginPath();c.moveTo(ally.x,ally.z);
-            for(const p of guide.path)c.lineTo(p.x,p.z);c.stroke();c.setLineDash([]);
-            const dest=guide.target();c.strokeStyle='#f0be76';c.lineWidth=.8;c.strokeRect(dest.x-1.8,dest.z-1.8,3.6,3.6);
+          if(guidance.path.length){
+            c.strokeStyle='#edb47f';c.lineWidth=.9;c.setLineDash([1.5,1.5]);c.beginPath();c.moveTo(player.x,player.z);
+            for(const p of guidance.path)c.lineTo(p.x,p.z);c.stroke();c.setLineDash([]);
+            const dest=guidance.destination;
+            if(dest){c.strokeStyle='#f0be76';c.lineWidth=.8;c.strokeRect(dest.x-1.8,dest.z-1.8,3.6,3.6);}
           }
           for (const e of enemies) {
             if (Math.hypot(e.x - player.x, e.z - player.z) < 18) {
@@ -2227,25 +2309,18 @@
             Math.min(0.7, state.hurt) +
             (player.hp < 25 && state.mode === "playing" ? 0.12 : 0);
           $("flashlight-tip").hidden = flashlight.visible || state.help || state.mode !== "playing";
-          ui.objective.textContent = ally.hp <= 0 ? "扶起林" : guide.complete ? "守住泵站" : "跟随林";
-          if(state.gate){
-            const dest=guide.target();
-            const waypoint=$("waypoint");waypoint.hidden=!dest;
-            if(dest){
-              camera.updateMatrixWorld(true);
-              const p=v3(dest.x,dest.y+2.4,dest.z).project(camera);
-              const ahead=v3(dest.x-camera.position.x,dest.y-camera.position.y,dest.z-camera.position.z).dot(camera.getWorldDirection(v3()))>0;
-              waypoint.style.left=clamp((p.x*.5+.5)*innerWidth,220,innerWidth-220)+'px';
-              waypoint.style.top=(ahead?clamp((-p.y*.5+.5)*innerHeight,150,innerHeight-240):innerHeight-240)+'px';
-              waypoint.textContent=(ahead?'◇ ':'↶ ')+dest.short+' · '+Math.round(Math.hypot(dest.x-player.x,dest.z-player.z))+' m';
-            }
-          } else $("waypoint").hidden=true;
+          guidance.update();
+          tutorial.render();
+          equipment.render();
           findInteraction();
           drawMap();
         }
         function reset() {
           combat.reset();
           tactics.reset();
+          guidance.reset();
+          equipment.reset();
+          tutorial.reset();
           bloodPools.forEach(p=>{p.life=0;p.mesh.visible=false;});
           for (const e of [...enemies, ...corpses]) {
             e.g.visible = false;
@@ -2451,6 +2526,10 @@
           if (e.code === "KeyR") reload();
           if (e.code === "KeyE") interact();
           if (e.code === "KeyF") toggleFlashlight();
+          if (e.code === "KeyV") equipment.melee();
+          if (e.code === "KeyQ") equipment.heal();
+          if (e.code === "KeyG") equipment.throwItem('smoke');
+          if (e.code === "KeyT") equipment.throwItem('grenade');
           if (e.code === "Space" && player.grounded) {
             player.vy = 7;
             player.grounded = false;
@@ -2513,8 +2592,10 @@
           weaponCamera.updateProjectionMatrix();
           combat.pose({time: state.time, moving, sprinting: player.sprinting, reload: player.reload});
           combat.renderHUD();
+          equipment?.pose();
         }
         function simulate(dt) {
+          if(state.mode!=="playing"||state.help)return;
           state.time += dt;
           state.navTimer -= dt;
           if (state.navTimer <= 0) {
@@ -2522,11 +2603,13 @@
             state.navTimer = 0.5;
           }
           combat.tick(dt, aiming && player.reload <= 0);
+          equipment.update(dt);
           updatePlayer(dt);
           updateWave(dt);
           updateEnemies(dt);
           if (state.mode !== "playing") return;
           updateAlly(dt);
+          tutorial.update();
           updateEffects(dt);
           if (state.gate) {
             state.gateY = Math.min(4.2, state.gateY + dt * 3);
@@ -2571,6 +2654,7 @@
           window.__game = {
             state,
             guide,
+            guidance, tutorial, equipment, canSee,
             tactics, navigation, types, colliders, bloodPools, updateEnemies, updateEffects, visible, damageBarrier,
             scene,
             district,
