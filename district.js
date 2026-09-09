@@ -138,7 +138,7 @@ window.createDistrict = function ({T, world, scene, box, cylinder, mesh, sign, m
   for(const x of [-4,4]) {
     box(x,4.75,5.5,.42,1.35,.4,'#33342e');
     for(let j=0;j<3;j++) {
-      const lamp=mesh(new T.SphereGeometry(.12,8,6),mat(j===0?'#bc5230':'#333f32',j===0));lamp.position.set(x,5.15-j*.35,5.72);lamp.scale.z=.3;staticParts.push(lamp);
+      const lamp=mesh(new T.SphereGeometry(.12,8,6),mat(j===0?'#bc5230':'#333f32'));lamp.position.set(x,5.15-j*.35,5.72);lamp.scale.z=.3;staticParts.push(lamp);
     }
   }
   // Burned-out vehicles have recognizable wheels, windows, hoods and doors, with proper collision.
@@ -204,40 +204,22 @@ window.createDistrict = function ({T, world, scene, box, cylinder, mesh, sign, m
     if(i%3===0){box(x,h+2,z,3,4,4,'#857d71');cylinder(x,h+6,z,.1,7,'#716e65');}
     for(let y=5;y<h-2;y+=3)box(x,y,z+4.02,4.3,.65,.03,'#656b63');
   }
-  const sky=new T.Mesh(new T.SphereGeometry(170,32,16),new T.ShaderMaterial({
-    side:T.BackSide,depthWrite:false,uniforms:{},
-    vertexShader:'varying vec3 v; void main(){v=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
-    fragmentShader:'varying vec3 v; void main(){float h=normalize(v).y;vec3 c=mix(vec3(.075,.10,.14),vec3(.009,.021,.049),smoothstep(-.04,.65,h));gl_FragColor=vec4(c,1.);}'
-  }));sky.position.y=0;scene.add(sky);
-  const glow=new T.Mesh(new T.CircleGeometry(2.2,32),new T.MeshBasicMaterial({color:'#c9d5df',fog:false}));
-  glow.position.set(-67,60,-123);glow.lookAt(0,0,0);scene.add(glow);
+  // No moon, sky glow, lit streetlamps or burning wrecks during the blackout.
   const puff=document.createElement('canvas');puff.width=puff.height=128;const pc=puff.getContext('2d'),pg=pc.createRadialGradient(64,64,1,64,64,62);
   pg.addColorStop(0,'#c4b9a6aa');pg.addColorStop(.45,'#88867c77');pg.addColorStop(1,'#55574e00');pc.fillStyle=pg;pc.fillRect(0,0,128,128);
-  const smokeTexture=new T.CanvasTexture(puff),smoke=[];
+  const smokeTexture=new T.CanvasTexture(puff),smokeGeometry=new T.PlaneGeometry(1,1),smoke=[];
   for(const [x,z] of [[28,29],[-30,-39],[29,-3],[-40,-39]]) {
     for(let i=0;i<8;i++) {
-      const s=new T.Sprite(new T.SpriteMaterial({map:smokeTexture,color:'#454541',transparent:true,opacity:.38,depthWrite:false}));scene.add(s);
+      const s=new T.Mesh(smokeGeometry,new T.MeshStandardMaterial({map:smokeTexture,color:'#454541',transparent:true,opacity:.38,depthWrite:false,roughness:1,side:T.DoubleSide}));s.receiveShadow=true;scene.add(s);
       smoke.push({s,x,z,phase:i/8});
     }
   }
-  for(const [x,z] of [[-11,22],[11,-24],[-32,-25],[32,25],[11,-48]]) {
-    const l=new T.PointLight('#e2b56e',24,17,1.7);l.position.set(x+1.9,6.1,z);scene.add(l);
-  }
-  const flames=[];
-  for(const [x,z] of [[28,27.4],[-30,-40.5],[29,-4.5]]) {
-    const g=new T.Group();g.position.set(x,.8,z);scene.add(g);
-    for(let j=0;j<4;j++){
-      const f=new T.Mesh(new T.ConeGeometry(.18,.85,5),new T.MeshBasicMaterial({color:j%2?'#e88331':'#eac16a',transparent:true,opacity:.85}));
-      f.position.set((j-1.5)*.22,.2,Math.sin(j)*.15);g.add(f);flames.push({f,phase:j});
-    }
-    const l=new T.PointLight('#ed873c',5,6,2);l.position.copy(g.position);l.position.y+=1;scene.add(l);
-  }
-  const ashPositions=new Float32Array(180*3);for(let i=0;i<ashPositions.length;i+=3){ashPositions[i]=random()*70-35;ashPositions[i+1]=random()*16;ashPositions[i+2]=random()*95-53;}
-  const ashGeo=new T.BufferGeometry();ashGeo.setAttribute('position',new T.BufferAttribute(ashPositions,3));
-  const ash=new T.Points(ashGeo,new T.PointsMaterial({size:.035,color:'#dbc6a1',transparent:true,opacity:.55,depthWrite:false}));scene.add(ash);
-  return {vehicleColliders,update(time){
-    for(const p of smoke){const t=(time*.09+p.phase)%1;p.s.position.set(p.x+t*2.4,1+t*10,p.z+Math.sin(t*3)*.6);p.s.scale.setScalar(1.3+t*5);p.s.material.opacity=.48*Math.sin(t*Math.PI);p.s.material.rotation=t*.5;}
-    for(const {f,phase} of flames){f.scale.y=.8+Math.sin(time*12+phase*3)*.3;f.rotation.z=Math.sin(time*8+phase)*.12;}
+  const ash=new T.InstancedMesh(new T.IcosahedronGeometry(.018,0),new T.MeshStandardMaterial({color:'#dbc6a1',roughness:1}),180);
+  const particle=new T.Object3D();
+  for(let i=0;i<180;i++){particle.position.set(random()*70-35,random()*16,random()*95-53);particle.updateMatrix();ash.setMatrixAt(i,particle.matrix);}
+  ash.receiveShadow=true;scene.add(ash);
+  return {vehicleColliders,update(time,camera){
+    for(const p of smoke){const t=(time*.09+p.phase)%1;p.s.position.set(p.x+t*2.4,1+t*10,p.z+Math.sin(t*3)*.6);p.s.scale.setScalar(1.3+t*5);p.s.material.opacity=.48*Math.sin(t*Math.PI);if(camera)p.s.quaternion.copy(camera.quaternion);p.s.rotateZ(t*.5);}
     ash.position.x=Math.sin(time*.09)*2;ash.position.y=-time*.13%4;
   }};
 };

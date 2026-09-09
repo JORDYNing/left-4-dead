@@ -86,13 +86,15 @@ const suite = async function () {
     return {maxProjectionError: Math.max(...errors)};
   });
 
-  await test('muzzle flash, local lighting, smoke, bolt cycle and finite tracer are visible and expire', () => {
+  await test('muzzle flash, smoke, bolt cycle and finite tracer expire without lighting the district', () => {
     reset(); g.shoot();
     const d = g.combat.debug;
-    assert(g.flash.visible && d.glow.visible && d.light.intensity > 0 && d.weaponLight.intensity > 0, 'No muzzle flash/light');
+    assert(g.flash.visible && d.glow.visible, 'No muzzle flash');
+    const lights=[];g.scene.traverse(x=>{if(x.isLight)lights.push(x);});
+    assert(lights.length===1&&lights[0]===g.flashlight,'Gunfire introduced an additional scene light');
     assert(d.smoke.some(p => p.sprite.visible) && d.tracers.some(t => t.root.visible), 'No smoke/tracer');
     step(2 / 60); assert(g.bolt.position.z > -.48, 'Bolt did not cycle');
-    step(.2); assert(!g.flash.visible && d.light.intensity === 0 && !d.tracers.some(t => t.root.visible), 'Flash or bullet beam persists');
+    step(.2); assert(!g.flash.visible && !d.glow.visible && !d.tracers.some(t => t.root.visible), 'Flash or bullet beam persists');
     assert(Math.abs(g.bolt.position.z + .51) < .00001, 'Bolt failed to return');
     step(.5); assert(!d.smoke.some(p => p.sprite.visible), 'Muzzle smoke never dissipates');
   });
@@ -174,7 +176,7 @@ const suite = async function () {
     assert(document.querySelectorAll('.damage-number').length === 24, 'DOM labels allocated without bound');
     reset();
     assert(g.combat.recoil.shots === 0 && d.shellMesh.count === 0 && d.smoke.every(p => !p.sprite.visible) && d.tracers.every(p => !p.root.visible) && d.decals.every(p => !p.mesh.visible), 'Restart retained VFX');
-    assert(visibleNumbers().length === 0 && !g.flash.visible && d.light.intensity === 0, 'Restart retained UI/flash');
+    assert(visibleNumbers().length === 0 && !g.flash.visible && !d.glow.visible, 'Restart retained UI/flash');
     return {shellCap: 40, smokeCap: 32, tracerCap: 12, labels: 24, geometryCountBefore: geometryCount};
   });
 

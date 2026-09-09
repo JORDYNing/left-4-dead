@@ -8,11 +8,14 @@ const suite=function(){
   const step=s=>{for(let i=0;i<Math.ceil(s*60);i++)g.simulate(1/60);};
   test('night lighting and actual F key tutorial',()=>{
     reset();g.updateUI();assert(!g.flashlight.visible&&!document.querySelector('#flashlight-tip').hidden,'Initial flashlight prompt missing');
-    const ambient=g.scene.children.find(x=>x.isHemisphereLight);assert(ambient.intensity<.7,'Daylight ambient remains');
+    const lights=[];g.scene.traverse(x=>{if(x.isLight)lights.push(x);});
+    assert(lights.length===1&&lights[0]===g.flashlight,'An additional scene light remains');
+    g.scene.traverse(x=>{for(const material of (Array.isArray(x.material)?x.material:[x.material]))
+      assert(!material?.emissive||material.emissive.getHex()===0||material.emissiveIntensity===0,'A scene material still glows without the flashlight');});
     g.setLocked(true);document.dispatchEvent(new KeyboardEvent('keydown',{code:'KeyF'}));g.setLocked(false);g.keys.clear();
     assert(g.flashlight.visible&&g.state.flashlightUsed&&document.querySelector('#flashlight-tip').hidden,'F did not turn on flashlight/dismiss hint');
     g.toggleFlashlight();assert(!g.flashlight.visible&&!document.querySelector('#flashlight-tip').hidden,'Turning light off lost guidance');
-    return {ambient:ambient.intensity,flashlightRange:g.flashlight.distance};
+    return {sceneLights:lights.length,flashlightRange:g.flashlight.distance};
   });
   test('first enemy appears in one second, all six within 3.5 seconds',()=>{
     reset();g.ally.hp=0;g.player.z=30.5;step(1);assert(g.enemies.length>=1,'First enemy late');step(2.5);assert(g.enemies.length===6&&g.state.pending===0,'First wave too slow');return {time:g.state.time,enemies:g.enemies.length};

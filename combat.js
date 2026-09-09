@@ -51,8 +51,6 @@ export function createCombatFeedback({scene, camera, weaponScene, weaponCamera, 
     gunRoll: new Spring(32, .65), cameraPitch: new Spring(29, .78), cameraYaw: new Spring(25, .8),
   };
   const springs = Object.values(recoil).filter(v => v instanceof Spring);
-  const light = new T.PointLight('#ffc477', 0, 7, 2); scene.add(light);
-  const weaponLight = new T.PointLight('#ffcf91', 0, 3, 2); weaponScene.add(weaponLight);
   const glow = new T.Sprite(new T.SpriteMaterial({map: particleTexture('flash'), color: '#ffdc9b',
     transparent: true, blending: T.AdditiveBlending, depthWrite: false, toneMapped: false}));
   muzzle.add(glow); glow.position.z = -.055; glow.visible = false;
@@ -254,8 +252,7 @@ export function createCombatFeedback({scene, camera, weaponScene, weaponCamera, 
     flash.visible = glow.visible = recoil.flashTime > 0;
     const strength = recoil.flashTime / .043;
     glow.material.opacity = strength * .85; flash.material.opacity = strength * .9;
-    flash.rotation.y = time * 57; light.intensity = strength * 5; weaponLight.intensity = strength * 1.7;
-    light.position.copy(socketWorld(muzzle)); weaponLight.position.copy(muzzle.getWorldPosition(scratch));
+    flash.rotation.y = time * 57;
     crosshair.style.setProperty('--gap', `${mix(28, 16, ads) + recoil.heat * mix(26, 12, ads) + (moving ? 8 : 0)}px`);
     crosshair.style.opacity = reload > 0 || sprinting ? .2 : mix(.9, .32, ads);
   }
@@ -280,7 +277,7 @@ export function createCombatFeedback({scene, camera, weaponScene, weaponCamera, 
     }
   }
 
-  function suspend() { audio.stop(); recoil.flashTime = recoil.shakeTime = 0; flash.visible = glow.visible = false; light.intensity = weaponLight.intensity = 0; }
+  function suspend() { audio.stop(); recoil.flashTime = recoil.shakeTime = 0; flash.visible = glow.visible = false; }
   function reset() {
     suspend(); springs.forEach(s => s.reset());
     Object.assign(recoil, {ads: 0, heat: 0, climb: 0, sinceShot: 10, burst: 0, shots: 0});
@@ -292,6 +289,6 @@ export function createCombatFeedback({scene, camera, weaponScene, weaponCamera, 
     bolt.position.z = -.51;
   }
   return {audio, recoil, fire, hit, impact, targetHit, tick, pose, view, shotDirection, socketWorld, renderHUD, suspend, reset,
-    get debug() { return {lastShot, lastHit, shells, shellMesh, smoke, tracers, decals, numbers, light, weaponLight, glow}; },
+    get debug() { return {lastShot, lastHit, shells, shellMesh, smoke, tracers, decals, numbers, glow}; },
   };
 }

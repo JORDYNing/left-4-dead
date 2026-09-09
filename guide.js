@@ -10,7 +10,7 @@ window.createGuide = function ({T, scene, player, ally, state, blocked, floorAt,
   const point=i=>({x:i%NX*S-36,z:Math.floor(i/NX)*S-55});
   const dirs=[[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[1,-1],[-1,1],[1,1]];
   const guide={stage:0,complete:false,status:'准备出发',path:[],timer:0,announced:false,waiting:false,stops};
-  const marker=new T.Mesh(new T.TorusGeometry(1,.035,5,40),new T.MeshBasicMaterial({color:'#7ccabb',transparent:true,opacity:.65,depthWrite:false}));
+  const marker=new T.Mesh(new T.TorusGeometry(1,.035,5,40),new T.MeshStandardMaterial({color:'#7ccabb',roughness:1,transparent:true,opacity:.65,depthWrite:false}));
   marker.rotation.x=-Math.PI/2;scene.add(marker);marker.visible=false;
   const walkable=new Uint8Array(count),cost=new Int32Array(count),queue=new Int32Array(count);
   function routeTo(target) {
