@@ -87,7 +87,7 @@ test('guard armor rewards head/rear hits and brutes smash blocking boards',()=>{
 });
 test('directional deaths fall, land, leave blood, fade and fully reset at bounded capacity',()=>{
   const {g,assert,arena,place,step}=qa;arena();place(0,20);const e=g.spawnEnemy('runner',{x:0,z:15}),start={x:e.x,z:e.z},head=e.head.getWorldPosition(new THREE.Vector3()).y;
-  g.hurtEnemy(e,999,new THREE.Vector3(0,1.6,15),false,true,new THREE.Vector3(1,0,0));step(.3);assert(e.x>start.x+.08&&Math.abs(e.z-start.z)<.02,'No directional momentum');step(2.7);e.g.updateMatrixWorld(true);const fallen=e.head.getWorldPosition(new THREE.Vector3()).y;assert(fallen<head-.5&&e.landed,'No actual collapse/landing');assert(g.bloodPools.some(p=>p.life>0&&p.mesh.visible),'No blood mark');step(4);assert(e.bodyMat.opacity<1&&e.g.position.y===e.y,'Corpse sinks instead of fading');
+  g.hurtEnemy(e,999,new THREE.Vector3(0,1.6,15),false,true,new THREE.Vector3(1,0,0));step(.3);e.g.updateMatrixWorld(true);assert(e.landed&&e.head.getWorldPosition(new THREE.Vector3()).y<head-.5,'Death retained a standing delay or mistimed landing');assert(e.x>start.x+.08&&Math.abs(e.z-start.z)<.02,'No directional momentum');step(2.7);e.g.updateMatrixWorld(true);const fallen=e.head.getWorldPosition(new THREE.Vector3()).y;assert(fallen<head-.5&&e.landed,'No actual collapse/landing');assert(g.bloodPools.some(p=>p.life>0&&p.mesh.visible),'No blood mark');step(4);assert(e.bodyMat.opacity<1&&e.g.position.y===e.y,'Corpse sinks instead of fading');
   for(let i=0;i<22;i++){const z=g.spawnEnemy('walker',{x:(i%5)*2-4,z:14});g.hurtEnemy(z,999,new THREE.Vector3(z.x,1,z.z));}assert(g.corpses.length<=16,'Unbounded corpses');step(8.2);assert(g.corpses.length===0,'No corpse release');g.reset();assert(!g.bloodPools.some(p=>p.mesh.visible)&&!g.tactics.claims.size&&!g.tactics.squads.size,'Restart leaves combat state');return {head,fallen,maxCorpses:16};
 });
 test('48-enemy pressure keeps finite coordinates, collision safety and distributed roles',()=>{
@@ -115,6 +115,6 @@ for(const {name,fn}of tests){
   const start=Date.now();
   try {const out=execFileSync('agent-browser',['--session',session,'eval','-b',Buffer.from(code).toString('base64')],{encoding:'utf8',timeout:120000});const result={name,...JSON.parse(out),ms:Date.now()-start};results.push(result);console.log(JSON.stringify(result));}
   catch(e){results.push({name,pass:false,error:e.message.slice(0,250)});console.log(JSON.stringify(results.at(-1)));break;}
-  fs.writeFileSync('logs/tactics-verification.json',JSON.stringify({passed:results.filter(r=>r.pass).length,total:results.length,results},null,2));
+  fs.writeFileSync(process.argv[3]?'logs/tactics-focused-verification.json':'logs/tactics-verification.json',JSON.stringify({passed:results.filter(r=>r.pass).length,total:results.length,results},null,2));
 }
-if(results.some(r=>!r.pass))process.exitCode=1;
+if(!results.length||results.some(r=>!r.pass))process.exitCode=1;

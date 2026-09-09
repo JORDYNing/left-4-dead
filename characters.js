@@ -20,6 +20,14 @@ export async function loadCharacterFactory(onProgress = () => {}) {
       }
     }
   }
+  // PixelHouse's 24 fps death take idles/staggers until frame 75; contact is
+  // frame 84. Keep only the collapse and settling, at twice the source speed.
+  const deathIndex = infected.animations.findIndex(clip => clip.name === 'dead');
+  const deathClip = T.AnimationUtils.subclip(infected.animations[deathIndex], 'dead', 75, 101, 24);
+  for (const track of deathClip.tracks) track.scale(.5);
+  deathClip.resetDuration();
+  infected.animations[deathIndex] = deathClip;
+  const deathLandingTime = (84 - 75) / 24 / 2;
   const gearGeometry={box:new T.BoxGeometry(1,1,1),hood:new T.IcosahedronGeometry(1,1),claw:new T.ConeGeometry(1,1,5)};
   const kitCanvas=document.createElement('canvas');kitCanvas.width=kitCanvas.height=128;
   const kitContext=kitCanvas.getContext('2d');kitContext.fillStyle='#b5b0a3';kitContext.fillRect(0,0,128,128);
@@ -55,7 +63,7 @@ export async function loadCharacterFactory(onProgress = () => {}) {
     });
     const bodyMat = meshes.find(m => m.isSkinnedMesh).material;
     const head = model.getObjectByName(friendly ? 'head' : 'Bip01_Head');
-    const rig = {g, upper, model, bodyMat, head, meshes, mixer, actions, kind, shot: 0, aim: 0, lastTime: null, activeAction: null, rifle: null, muzzle: null, flash: null};
+    const rig = {g, upper, model, bodyMat, head, meshes, mixer, actions, kind, deathLandingTime, shot: 0, aim: 0, lastTime: null, activeAction: null, rifle: null, muzzle: null, flash: null};
     function action(name, fade = .16) {
       if (rig.activeAction === name) return;
       const next = actions[name];
@@ -183,9 +191,12 @@ export async function loadCharacterFactory(onProgress = () => {}) {
       };
     }
     rig.die = () => {
-      action('dead', .06);
-      actions.dead.setLoop(T.LoopOnce, 1); actions.dead.clampWhenFinished = true;
-      actions.dead.paused = false; actions.dead.setEffectiveTimeScale(1);
+      // Interrupt even paused walking/attack actions and apply the falling pose
+      // on the lethal hit itself, without a blend back toward a standing pose.
+      mixer.stopAllAction();
+      actions.dead.reset().setEffectiveWeight(1).setEffectiveTimeScale(1).setLoop(T.LoopOnce, 1);
+      actions.dead.clampWhenFinished = true;
+      actions.dead.play(); rig.activeAction = 'dead'; mixer.update(0);
       rig.bodyMat.emissive.setHex(0);
     };
     rig.resetPose = () => {

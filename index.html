@@ -1676,7 +1676,6 @@
             e.deathVelocity=direction.clone().multiplyScalar((headshot?2.6:1.7)/(e.type==='brute'?1.8:1));
             e.deathTilt=(headshot?-.1:.06)*(e.id%2?1:-1);
             e.deathHeadshot=headshot;e.landed=false;
-            e.actions.dead.setEffectiveTimeScale(e.type==='brute'?.72:headshot?1.25:1);
             // Choose the collapse orientation with the most free body-length space.
             let fallYaw=e.g.rotation.y,best=-1;
             for(const yaw of [e.g.rotation.y,e.g.rotation.y+Math.PI/2,e.g.rotation.y-Math.PI/2,e.g.rotation.y+Math.PI]) {
@@ -2055,13 +2054,12 @@
             if(e.corpseTime<.65) {
               move(e,e.deathVelocity.x*dt,e.deathVelocity.z*dt,true);
               e.deathVelocity.multiplyScalar(Math.exp(-7*dt));
-              e.g.rotation.z=e.deathTilt*Math.sin(Math.min(1,e.corpseTime/.65)*Math.PI);
             }
+            e.g.rotation.z=e.deathTilt*Math.sin(Math.min(1,e.corpseTime/e.deathLandingTime)*Math.PI);
             e.upper.position.y=T.MathUtils.damp(e.upper.position.y,0,12,dt);
             e.upper.rotation.x=T.MathUtils.damp(e.upper.rotation.x,0,12,dt);
             e.g.position.set(e.x,e.y,e.z);
-            const landing=e.type==='brute'?1.1:e.deathHeadshot?.52:.72;
-            if(!e.landed&&e.corpseTime>landing){
+            if(!e.landed&&e.corpseTime>=e.deathLandingTime){
               e.landed=true;
               combat.audio.play('bodyFall',{heavy:e.type==='brute',distance:Math.hypot(e.x-player.x,e.z-player.z)});
               burst(v3(e.x,e.y+.08,e.z),e.type==='brute'?12:6,true);
