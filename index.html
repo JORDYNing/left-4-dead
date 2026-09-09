@@ -768,6 +768,12 @@
           transition: none !important;
         }
       }
+      #flashlight-tip {position:absolute;bottom:25%;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:16px;padding:16px 24px;border:1px solid #c6b58e66;background:#101c23ec;color:#ecdfbb;box-shadow:0 8px 35px #0005;pointer-events:none;}
+      #flashlight-tip[hidden],#waypoint[hidden] {display:none;}
+      #flashlight-tip kbd {font:700 24px monospace;border:1px solid #ccb888;padding:7px 12px;}
+      #flashlight-tip small {display:block;margin-top:5px;font-size:11px;color:#aaa999;}
+      #lamp-state {position:absolute;right:34px;bottom:158px;font:12px monospace;color:#d2c6a5;}
+      #waypoint {position:absolute;transform:translate(-50%,-50%);color:#c8e8df;text-shadow:0 2px 6px #000;background:#102224b5;border-bottom:1px solid #81b6b2;padding:6px 11px;font-size:12px;pointer-events:none;}
     </style>
   </head>
   <body>
@@ -782,21 +788,22 @@
           <div class="eyebrow">合作生存 / 隔离区 04</div>
           <h1>余光<span>AFTERLIGHT</span></h1>
           <p class="lede">
-            天亮之前，别让这条街安静下来。<br />与你的搭档守住泵站，在尸潮之间寻找补给。
+            日落大道断电了，街角传来不属于活人的脚步。<br />打开手电，跟随林穿过废墟，抵达泵站。
           </p>
           <button id="start" class="primary" disabled>
             <span>正在接通电台…</span><span>→</span>
           </button>
-          <div class="start-meta">单人 + AI 搭档 · 无尽波次 · 鼠标 / 键盘</div>
+          <div class="start-meta">单人 + 持枪 AI 搭档 · 夜间尸潮 · 鼠标 / 键盘</div>
           <div id="load-error" role="alert"></div>
           <div id="mobile-note">请使用带鼠标和键盘的电脑游玩。</div>
+          <a href="credits.html" target="_blank" rel="noopener" style="display:inline-block;margin-top:16px;color:#a4aca9;font-size:11px;letter-spacing:.06em">模型作者与开源许可 ↗</a>
         </div>
         <aside class="dossier">
           <div class="dossier-top">
             <span class="mono">QUARANTINE<br />ZONE</span
             ><span class="sector">04</span>
           </div>
-          <h2>泵站旧街</h2>
+          <h2>洛杉矶 · 死城之夜</h2>
           <div class="muted" style="font-size: 11px">最后一处亮着灯的街区</div>
           <svg
             class="map-sketch"
@@ -889,7 +896,7 @@
     <div id="hud">
       <div class="hud-top">
         <div class="location">
-          <small>隔离区 04 / 泵站旧街</small
+          <small>洛杉矶 / 日落大道 · 隔离区 04</small
           ><strong id="zone">出生安全屋</strong>
         </div>
         <div class="wave-box">
@@ -913,11 +920,14 @@
       <div id="toast"><strong></strong><small></small></div>
       <div id="interact" hidden></div>
       <div id="reload" hidden>正在换弹</div>
+      <div id="flashlight-tip" hidden><kbd>F</kbd><span>打开手电筒<small>街道已断电 · 照亮前路，跟上林</small></span></div>
+      <div id="lamp-state">F 手电 · 关闭</div>
+      <div id="waypoint" hidden></div>
       <div class="bottom-left">
         <div class="partner">
           <div class="avatar">林</div>
           <div>
-            <strong>林 · AI 搭档</strong
+            <strong>林 · 领路与火力掩护</strong
             ><small id="ally-status">掩护 / 随行</small>
           </div>
         </div>
@@ -945,9 +955,9 @@
     </div>
     <div id="damage"></div>
     <section id="help" hidden>
-      <div class="eyebrow">先在这里练习，外面还很安静</div>
+      <div class="eyebrow">街道已经断电，出门后尸潮会迅速靠近</div>
       <h2>欢迎来到安全屋</h2>
-      <p>左侧有三个标靶。靠近正前方出口，开始生存。</p>
+      <p>按 H 收起提示，再按 F 打开手电。跟随林出门；左侧标靶可练枪。</p>
       <div class="controls">
         <div><kbd>WASD</kbd>移动</div>
         <div><kbd>鼠标</kbd>转动视角</div>
@@ -992,44 +1002,27 @@
       <p id="fatal-text"></p>
       <button onclick="location.reload()">重新加载</button>
     </div>
+    <script src="district.js"></script>
+    <script type="importmap">{"imports":{"three":"./vendor/three/three.module.js"}}</script>
+    <script src="guide.js"></script>
     <script>
-      // Only Three.js is downloaded. All geometry, signs, particles and sounds are generated here.
-      (function loadEngine() {
-        const urls = [
-          "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js",
-          "https://unpkg.com/three@0.160.0/build/three.min.js",
-        ];
-        function next() {
-          if (window.THREE) {
-            boot();
-            return;
-          }
-          const url = urls.shift();
-          if (!url) {
-            document.getElementById("load-error").textContent =
-              "无法下载 Three.js。请检查网络后重新加载；首次启动需要连接 CDN。";
-            document.getElementById("start").textContent = "重新连接";
-            document.getElementById("start").disabled = false;
-            document.getElementById("start").onclick = () => location.reload();
-            return;
-          }
-          const s = document.createElement("script");
-          let settled = false;
-          const finish = () => {
-            if (settled) return;
-            settled = true;
-            clearTimeout(timer);
-            s.onload = s.onerror = null;
-            if (!window.THREE) s.remove();
-            next();
-          };
-          const timer = setTimeout(finish, 12000);
-          s.src = url;
-          s.onload = finish;
-          s.onerror = finish;
-          document.head.appendChild(s);
+      (async function loadEngine() {
+        try {
+          window.THREE = await import('./vendor/three/three.module.js');
+          document.getElementById('start').textContent = '正在加载角色与装备…';
+          const { loadCharacterFactory } = await import('./characters.js');
+          const factory = await loadCharacterFactory((done, total) => {
+            document.getElementById('start').textContent = `正在加载角色与装备… ${Math.round(done / total * 100)}%`;
+          });
+          window.createCharacterFactory = () => factory;
+          boot();
+        } catch (error) {
+          console.error(error);
+          document.getElementById('load-error').textContent = '资源加载失败，请检查网络后重试。' + error.message;
+          const start = document.getElementById('start');
+          start.textContent = '重新加载'; start.disabled = false;
+          start.onclick = () => location.reload();
         }
-        next();
       })();
       function boot() {
         "use strict";
@@ -1088,8 +1081,8 @@
         renderer.toneMapping = T.ACESFilmicToneMapping;
         renderer.toneMappingExposure = 1.18;
         const scene = new T.Scene();
-        scene.background = new T.Color("#b0b9b1");
-        scene.fog = new T.FogExp2("#b0b9b1", 0.0135);
+        scene.background = new T.Color("#111d29");
+        scene.fog = new T.FogExp2("#111d29", 0.018);
         const camera = new T.PerspectiveCamera(
           76,
           innerWidth / innerHeight,
@@ -1098,9 +1091,9 @@
         );
         camera.rotation.order = "YXZ";
         scene.add(camera);
-        scene.add(new T.HemisphereLight("#e2eadb", "#424d45", 2.25));
-        const sun = new T.DirectionalLight("#ffdbac", 2.5);
-        sun.position.set(-28, 55, 22);
+        scene.add(new T.HemisphereLight("#91a9c0", "#252b30", 0.52));
+        const sun = new T.DirectionalLight("#a9bdd6", 0.85);
+        sun.position.set(-28, 55, -42);
         sun.castShadow = true;
         sun.shadow.mapSize.set(1536, 1536);
         Object.assign(sun.shadow.camera, {
@@ -1129,6 +1122,7 @@
           barriers = [],
           enemies = [],
           enemyPool = [],
+          corpses = [],
           effects = [];
         function mat(color, emissive = false) {
           const key = color + "/" + emissive;
@@ -1222,20 +1216,25 @@
         }
         // Static boxes are merged by material to keep the scene inexpensive to draw.
         function batchStatic() {
-          const groups = new Map();
+          const groups = new Map(), rayBins = new Map();
           for (const m of staticParts) {
             m.updateMatrix();
-            const g = m.geometry.clone().applyMatrix4(m.matrix).toNonIndexed();
+            const transformed = m.geometry.clone().applyMatrix4(m.matrix);
+            const g = transformed.index ? transformed.toNonIndexed() : transformed;
+            if(g !== transformed) transformed.dispose();
             const key = m.material.uuid;
             if (!groups.has(key))
               groups.set(key, { material: m.material, items: [] });
             groups.get(key).items.push(g);
+            const bin = Math.floor(m.position.x / 12) + ',' + Math.floor(m.position.z / 12);
+            if (!rayBins.has(bin)) rayBins.set(bin, []);
+            rayBins.get(bin).push(g);
             world.remove(m);
           }
           for (const group of groups.values()) {
             const geom = new T.BufferGeometry();
             for (const name of ["position", "normal", "uv"]) {
-              const arrays = group.items.map((g) => g.getAttribute(name).array);
+              const arrays = group.items.map((g) => g.getAttribute(name)?.array || new Float32Array(g.attributes.position.count * (name === "uv" ? 2 : 3)));
               const data = new Float32Array(
                 arrays.reduce((n, a) => n + a.length, 0),
               );
@@ -1252,8 +1251,17 @@
             const m = mesh(geom, group.material);
             m.castShadow = true;
             m.receiveShadow = true;
-            occluders.push(m);
             group.items.forEach((g) => g.dispose());
+          }
+          // Rendering shares materials across the district; raycasts use small spatial batches.
+          // Their bounds reject distant shop/skyline triangles before testing individual faces.
+          const rayMaterial = new T.MeshBasicMaterial({side:T.DoubleSide});
+          for(const items of rayBins.values()) {
+            const data=new Float32Array(items.reduce((n,g)=>n+g.attributes.position.array.length,0));let at=0;
+            for(const g of items){data.set(g.attributes.position.array,at);at+=g.attributes.position.array.length;}
+            const geometry=new T.BufferGeometry();geometry.setAttribute('position',new T.BufferAttribute(data,3));
+            geometry.computeBoundingSphere();geometry.computeBoundingBox();
+            occluders.push(new T.Mesh(geometry,rayMaterial));
           }
           staticParts.length = 0;
         }
@@ -1568,6 +1576,8 @@
         supply(22, -22, "ammo", 2.7);
         supply(-6, -47, "ammo");
         supply(30, 15, "med");
+        const district = createDistrict({T, world, scene, box, cylinder, mesh, sign, mat, staticParts});
+        for (const c of district.vehicleColliders) colliders.push({...c,b:0,h:1.55,active:true});
         batchStatic();
         // First-person weapon is rendered separately so nearby walls do not clip its silhouette.
         const weaponScene = new T.Scene(),
@@ -1577,12 +1587,13 @@
             0.02,
             10,
           );
-        weaponScene.add(new T.HemisphereLight("#eff2de", "#43564e", 2.8));
-        const gunLight = new T.DirectionalLight("#ffe7be", 2);
+        weaponScene.add(new T.HemisphereLight("#9dadb6", "#20282b", .85));
+        const gunLight = new T.DirectionalLight("#b4c3ce", .9);
         gunLight.position.set(-2, 4, 2);
         weaponScene.add(gunLight);
         const gun = new T.Group();
         weaponScene.add(gun);
+        gun.scale.setScalar(.82);
         box(0.24, -0.2, -0.48, 0.13, 0.15, 0.45, "#374944", false, gun);
         box(0.24, -0.14, -0.64, 0.11, 0.08, 0.34, "#506159", false, gun);
         box(0.24, -0.2, -0.86, 0.058, 0.06, 0.26, "#293d37", false, gun);
@@ -1624,6 +1635,10 @@
         ).rotation.z = -0.25;
         box(0.14, -0.31, -0.64, 0.14, 0.12, 0.16, "#92957a", false, gun);
         box(0.28, -0.31, -0.38, 0.15, 0.14, 0.18, "#8e9377", false, gun);
+        const barrel = mesh(new T.CylinderGeometry(.026,.026,.28,12), "#263137", gun);
+        barrel.rotation.x=Math.PI/2;barrel.position.set(.24,-.19,-.98);
+        for(let i=0;i<6;i++)box(.24,-.083,-.49-i*.04,.12,.02,.018,"#273138",false,gun);
+        box(.31,-.18,-.51,.014,.06,.09,"#909182",false,gun);
         const flash = mesh(
           new T.ConeGeometry(0.09, 0.25, 5),
           new T.MeshBasicMaterial({
@@ -1636,11 +1651,16 @@
         flash.rotation.x = -Math.PI / 2;
         flash.position.set(0.24, -0.19, -1.06);
         flash.visible = false;
-        const flashlight = new T.SpotLight("#f4f2cd", 22, 27, 0.43, 0.55, 1);
+        const flashlight = new T.SpotLight("#eee5cf", 34, 38, 0.48, 0.65, 1);
         camera.add(flashlight, flashlight.target);
         flashlight.position.set(0.25, -0.1, 0);
         flashlight.target.position.set(0, 0, -12);
         flashlight.visible = false;
+        flashlight.castShadow = true;
+        flashlight.shadow.mapSize.set(1024,1024);
+        flashlight.shadow.bias = -.0004;
+        flashlight.shadow.normalBias = .025;
+        flashlight.shadow.camera.near = .15;
         // Shared geometry and a capped pool bound enemy/effect memory over an endless run.
         const types = {
           walker: {
@@ -1668,40 +1688,8 @@
             points: 300,
           },
         };
-        function actor(color) {
-          const g = new T.Group(),
-            bodyMat = new T.MeshStandardMaterial({ color, roughness: 1 });
-          const torso = box(0, 1.17, 0, 0.57, 0.73, 0.34, bodyMat, false, g),
-            head = box(0, 1.81, 0, 0.34, 0.39, 0.34, "#a6ab88", false, g);
-          box(0, 1.05, -0.185, 0.4, 0.22, 0.06, bodyMat, false, g);
-          const limbs = [];
-          for (const side of [-1, 1]) {
-            const leg = new T.Group();
-            leg.position.set(side * 0.17, 0.84, 0);
-            g.add(leg);
-            box(0, -0.4, 0, 0.21, 0.8, 0.24, "#415346", false, leg);
-            limbs.push(leg);
-            const arm = new T.Group();
-            arm.position.set(side * 0.39, 1.46, 0);
-            g.add(arm);
-            box(0, -0.3, -0.09, 0.17, 0.67, 0.2, bodyMat, false, arm);
-            limbs.push(arm);
-          }
-          for (const x of [-0.09, 0.09])
-            box(
-              x,
-              1.85,
-              -0.177,
-              0.045,
-              0.035,
-              0.012,
-              mat("#edd3a1", true),
-              false,
-              g,
-            );
-          return { g, bodyMat, head, torso, limbs };
-        }
-        const ally = Object.assign(actor("#497f7b"), {
+        const actor = createCharacterFactory(T);
+        const ally = Object.assign(actor("#37494a", "ally"), {
           x: 3,
           z: 35,
           y: 0,
@@ -1713,14 +1701,13 @@
         });
         scene.add(ally.g);
         ally.g.position.set(3, 0, 35);
-        box(0, 1.35, 0.27, 0.5, 0.6, 0.25, "#53645b", false, ally.g);
         const allyLabel = sign(
-          "林 / AI",
+          "林 · 领路 / LIN",
           0,
-          2.6,
+          2.35,
           0,
-          1.4,
-          0.37,
+          1.55,
+          0.3,
           "#b9ddc4",
           "#355c55",
         );
@@ -1740,7 +1727,7 @@
               p: pos.clone(),
               v: v3(rand(-2, 2), rand(0.5, 3), rand(-2, 2)),
               life: rand(0.14, 0.45),
-              color: new T.Color(blood ? "#ac7353" : "#f0c891"),
+              color: new T.Color(blood ? "#843c35" : "#f0c891"),
             });
         }
         const ray = new T.Raycaster(),
@@ -1766,6 +1753,7 @@
           flash: 0,
           training: 0,
           navTimer: 0,
+          flashlightUsed: false,
         };
         const player = {
           x: 0,
@@ -1824,15 +1812,15 @@
             const t = audioCtx.currentTime,
               g = audioCtx.createGain();
             g.connect(audioCtx.destination);
-            if (kind === "shot" || kind === "step") {
+            if (kind === "shot" || kind === "allyshot" || kind === "step") {
               const s = audioCtx.createBufferSource(),
                 f = audioCtx.createBiquadFilter();
               s.buffer = noiseBuffer;
               f.type = "lowpass";
-              f.frequency.value = kind === "shot" ? 2300 : 280;
+              f.frequency.value = kind !== "step" ? 2300 : 280;
               s.connect(f);
               f.connect(g);
-              g.gain.setValueAtTime(kind === "shot" ? 0.12 : 0.035, t);
+              g.gain.setValueAtTime(kind === "shot" ? 0.12 : kind === "allyshot" ? 0.055 : 0.035, t);
               g.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
               s.start(t);
               s.stop(t + 0.13);
@@ -2052,7 +2040,7 @@
             score = -Infinity;
           for (const [x, z] of spawns) {
             const d = Math.hypot(x - player.x, z - player.z);
-            if (d < (state.wave === 1 ? 29 : 16)) continue;
+            if (d < (state.wave === 1 ? 20 : 14)) continue;
             const dx = (x - player.x) / d,
               dz = (z - player.z) / d,
               dot = dx * -Math.sin(player.yaw) + dz * -Math.cos(player.yaw);
@@ -2071,9 +2059,10 @@
         }
         function spawnEnemy(type, where) {
           const cfg = types[type];
-          let e = enemyPool.pop();
+          const poolIndex = enemyPool.findIndex(e => e.kind === type);
+          let e = poolIndex < 0 ? null : enemyPool.splice(poolIndex, 1)[0];
           if (!e) {
-            e = actor(cfg.color);
+            e = actor(cfg.color, type);
             e.g.traverse((m) => {
               if (m.isMesh) m.userData.enemy = e;
             });
@@ -2096,7 +2085,7 @@
             age: 0,
             vault: 0,
           });
-          e.bodyMat.color.set(cfg.color);
+          e.resetPose();
           e.bodyMat.emissive.setHex(0);
           e.g.scale.setScalar(cfg.scale);
           e.g.position.set(e.x, e.y, e.z);
@@ -2121,9 +2110,11 @@
             sound("hit");
           }
           if (e.hp <= 0) {
-            e.g.visible = false;
             enemies.splice(enemies.indexOf(e), 1);
-            enemyPool.push(e);
+            e.die(); e.corpseTime = 0; corpses.push(e);
+            if (corpses.length > 8) {
+              const old = corpses.shift(); old.g.visible = false; enemyPool.push(old);
+            }
             if (byAlly) {
               ally.kills++;
               state.score += Math.round(types[e.type].points * 0.35);
@@ -2190,7 +2181,7 @@
               burst(hit.point, 4);
             } else {
               const e = hit.object.userData.enemy;
-              if (e) hurtEnemy(e, hit.object === e.head ? 70 : 34, hit.point);
+              if (e) hurtEnemy(e, hit.point.y - e.y > 1.58 * types[e.type].scale ? 70 : 34, hit.point);
             }
           } else if (wallHit) {
             burst(wallHit.point, 5);
@@ -2249,16 +2240,16 @@
         function openGate() {
           state.gate = true;
           gateCollider.active = false;
-          state.between = 3;
-          ui.objective.textContent = "西侧诊所补充医疗，东侧平台补充弹药。";
+          state.between = 0.8;
+          ui.objective.textContent = "跟随林前往西侧医疗诊所。";
           buildNav();
-          toast("准备迎接第一波", "3 秒后，远处的感染者开始靠近。", 3);
-          radio("我跟着你。别守死一个位置。");
+          toast("街道已失守", "感染者正在靠近 · 打开手电，跟上林。", 3);
+          radio(flashlight.visible ? "跟上我，先去西侧诊所！" : "街道断电了。按 F 打开手电，跟上我！", 6);
         }
         function startWave() {
           state.wave++;
           state.pending =
-            state.wave === 1 ? 4 : Math.min(52, 6 + state.wave * 3);
+            state.wave === 1 ? 6 : Math.min(52, 6 + state.wave * 3);
           state.spawnClock = 0;
           state.between = -1;
           toast(
@@ -2296,20 +2287,20 @@
               state.pending--;
               state.spawnClock =
                 state.wave === 1
-                  ? 1.6
-                  : Math.max(0.36, 1.2 - state.wave * 0.05);
+                  ? 0.42
+                  : Math.max(0.24, 0.65 - state.wave * 0.025);
             } else state.spawnClock = 0.5;
           }
           if (state.pending === 0 && enemies.length === 0) {
             state.completed = state.wave;
-            state.between = 12;
+            state.between = 6;
             state.score += state.wave * 250;
             player.stamina = 100;
             if (ally.hp <= 0) {
               ally.hp = 60;
               ally.down = 0;
             }
-            toast("街区暂时安全", "12 秒整备时间 · 寻找补给，照应搭档", 4);
+            toast("街区暂时安全", "6 秒整备时间 · 寻找补给，照应搭档", 4);
             radio("这波结束了。抓紧补给，下一波快到了。");
           }
         }
@@ -2393,60 +2384,74 @@
                 (e.vault > 0 ? Math.sin((e.vault / 0.45) * Math.PI) * 0.8 : 0),
               e.z,
             );
-            e.g.rotation.z = Math.sin(e.age * 7) * 0.025;
-            e.limbs[0].rotation.x = Math.sin(e.age * e.speed * 4) * 0.48;
-            e.limbs[2].rotation.x = -e.limbs[0].rotation.x;
-            e.limbs[1].rotation.x = -0.8 + Math.sin(e.age * 4) * 0.18;
-            e.limbs[3].rotation.x = -0.8 - Math.sin(e.age * 4) * 0.18;
+            e.g.rotation.z = Math.sin(e.age * 3) * 0.018;
+            e.animate(e.age, dist > reach, dist < reach + .4);
           }
         }
+        const guide = createGuide({T, scene, player, ally, state, blocked, floorAt, move, radio, toast});
+        const allyTracer = new T.Line(new T.BufferGeometry().setFromPoints([v3(), v3()]),
+          new T.LineBasicMaterial({color:'#f3cf8b',transparent:true,opacity:.8}));
+        allyTracer.visible=false;allyTracer.frustumCulled=false;scene.add(allyTracer);
         function updateAlly(dt) {
           ally.cool -= dt;
           ally.heal = Math.max(0, ally.heal - dt);
+          ally.shot = Math.max(0, ally.shot - dt);
+          allyTracer.visible=ally.shot>0;
           if (ally.hp <= 0) {
+            guide.update(dt);
             ally.g.rotation.z = -Math.PI / 2;
-            ally.g.position.y = 0.35;
+            ally.g.position.y = ally.y + .35;
+            ally.flash.visible = false;allyTracer.visible = false;
             return;
           }
           ally.g.rotation.z = 0;
+          const walking = guide.update(dt);
           const d = Math.hypot(player.x - ally.x, player.z - ally.z);
-          if (d > 3.8) {
-            const dir = directionToPlayer(ally);
-            move(ally, dir.x * 3.9 * dt, dir.z * 3.9 * dt, true);
-            ally.g.rotation.y = Math.atan2(dir.x, dir.z) + Math.PI;
-            ally.limbs[0].rotation.x = Math.sin(state.time * 9) * 0.45;
-            ally.limbs[2].rotation.x = -ally.limbs[0].rotation.x;
-          } else ally.limbs[0].rotation.x = ally.limbs[2].rotation.x = 0;
           ally.g.position.set(ally.x, ally.y, ally.z);
           allyLabel.rotation.y = player.yaw - ally.g.rotation.y;
+          // Keep the whole weapon and both hands aligned while acquiring and firing at a target.
+          if (ally.target && (ally.target.hp <= 0 || Math.hypot(ally.target.x-ally.x,ally.target.z-ally.z)>22)) ally.target=null;
           if (ally.cool <= 0) {
-            const enemy = enemies
-              .filter((e) => Math.hypot(e.x - ally.x, e.z - ally.z) < 19)
-              .sort(
-                (a, b) =>
-                  Math.hypot(a.x - ally.x, a.z - ally.z) -
-                  Math.hypot(b.x - ally.x, b.z - ally.z),
-              )
-              .find((e) =>
-                visible(
-                  v3(ally.x, ally.y + 1.5, ally.z),
-                  v3(e.x, e.y + 1.2, e.z),
-                ),
-              );
+            ally.target = enemies
+              .filter(e=>Math.hypot(e.x-ally.x,e.z-ally.z)<22)
+              .sort((a,b)=>Math.hypot(a.x-ally.x,a.z-ally.z)-Math.hypot(b.x-ally.x,b.z-ally.z))
+              .find(e=>visible(v3(ally.x,ally.y+1.5,ally.z),v3(e.x,e.y+1.3,e.z))) || null;
+          }
+          if (ally.target) {
+            const e=ally.target,range=Math.hypot(e.x-ally.x,e.z-ally.z);
+            ally.g.rotation.y=Math.atan2(e.x-ally.x,e.z-ally.z)+Math.PI;
+            ally.aim=Math.atan2(e.y+1.3*types[e.type].scale-(ally.y+1.34),range);
+          } else ally.aim=T.MathUtils.damp(ally.aim,0,8,dt);
+          ally.animate(state.time,walking);
+          if (ally.target) ally.aimAt(v3(ally.target.x, ally.target.y+1.3*types[ally.target.type].scale, ally.target.z));
+          if (ally.cool <= 0) {
+            const enemy=ally.target;
             if (enemy) {
-              ally.cool = state.wave === 1 ? 1.5 : 0.75;
-              ally.g.rotation.y =
-                Math.atan2(enemy.x - ally.x, enemy.z - ally.z) + Math.PI;
-              hurtEnemy(enemy, 22, v3(enemy.x, enemy.y + 1.3, enemy.z), true);
-              burst(v3(ally.x, ally.y + 1.4, ally.z), 2);
-            } else ally.cool = 0.25;
+              ally.g.updateMatrixWorld(true);
+              const muzzle=ally.muzzle.getWorldPosition(v3()),hit=v3(enemy.x,enemy.y+1.3*types[enemy.type].scale,enemy.z);
+              if (visible(muzzle,hit)) {
+                ally.cool = state.wave===1 ? 1.1 : .7;
+                ally.shot = .095;ally.flash.visible=true;allyTracer.visible=true;
+                const a=allyTracer.geometry.attributes.position;a.setXYZ(0,muzzle.x,muzzle.y,muzzle.z);a.setXYZ(1,hit.x,hit.y,hit.z);a.needsUpdate=true;
+                hurtEnemy(enemy,22,hit,true);burst(muzzle,2);sound('allyshot');
+              } else ally.cool=.18;
+            } else ally.cool=.22;
           }
           if (player.hp < 45 && ally.heal <= 0 && d < 3.8) {
-            player.hp = Math.min(100, player.hp + 22);
-            ally.heal = 45;
-            radio("我给你包扎一下。继续移动！");
-            sound("pickup");
+            player.hp = Math.min(100, player.hp + 22);ally.heal = 45;
+            radio("我给你包扎一下。继续移动！");sound("pickup");
           }
+          allyLabel.rotation.y = player.yaw - ally.g.rotation.y;
+          if(ally.shot>0){
+            ally.g.updateMatrixWorld(true);
+            const muzzle=ally.muzzle.getWorldPosition(v3()),a=allyTracer.geometry.attributes.position;
+            a.setXYZ(0,muzzle.x,muzzle.y,muzzle.z);a.needsUpdate=true;
+          }
+        }
+        function toggleFlashlight() {
+          flashlight.visible=!flashlight.visible;
+          if(flashlight.visible&&!state.flashlightUsed){state.flashlightUsed=true;radio('很好。照着街角走，别让僵尸摸到背后。',4);}
+          updateUI();
         }
         function updatePlayer(dt) {
           player.fire = Math.max(0, player.fire - dt);
@@ -2509,6 +2514,11 @@
           if (mouseDown && !player.sprinting) shoot();
         }
         function updateEffects(dt) {
+          for (let i = corpses.length - 1; i >= 0; i--) {
+            const e = corpses[i]; e.corpseTime += dt; e.mixer.update(dt);
+            if (e.corpseTime > 4.2) e.g.position.y = e.y - (e.corpseTime - 4.2) * 1.2;
+            if (e.corpseTime > 5) { e.g.visible = false; corpses.splice(i, 1); enemyPool.push(e); }
+          }
           state.toast = Math.max(0, state.toast - dt);
           state.radio = Math.max(0, state.radio - dt);
           state.hit = Math.max(0, state.hit - dt);
@@ -2600,6 +2610,11 @@
                   : "#eba267";
             c.fillRect(s.x - 1, s.z - 1, 2, 2);
           }
+          if(state.gate&&!guide.complete){
+            c.strokeStyle='#78b9b5';c.lineWidth=.7;c.setLineDash([1.5,1.5]);c.beginPath();c.moveTo(ally.x,ally.z);
+            for(const p of guide.path)c.lineTo(p.x,p.z);c.stroke();c.setLineDash([]);
+            const dest=guide.target();c.strokeStyle='#f0be76';c.lineWidth=.8;c.strokeRect(dest.x-1.8,dest.z-1.8,3.6,3.6);
+          }
           for (const e of enemies) {
             if (Math.hypot(e.x - player.x, e.z - player.z) < 18) {
               c.fillStyle = e.type === "brute" ? "#fa9d7d" : "#dc7966";
@@ -2624,7 +2639,7 @@
           c.restore();
           c.font = "9px monospace";
           c.fillStyle = "#aebfaf";
-          c.fillText("N ↑   04 / PUMP", 9, 209);
+          c.fillText("N ↑   LOS ANGELES / 04", 9, 209);
         }
         function updateUI() {
           ui.health.textContent = Math.ceil(player.hp);
@@ -2657,9 +2672,7 @@
               : "生命 " +
                 Math.ceil(ally.hp) +
                 " · " +
-                (ally.heal > 0
-                  ? "包扎冷却 " + Math.ceil(ally.heal) + "s"
-                  : "可以紧急包扎");
+                guide.status;
           ui.zone.textContent =
             player.z > 26 && Math.abs(player.x) < 11
               ? "出生安全屋"
@@ -2671,7 +2684,7 @@
                     ? "泵站大厅"
                     : player.x > 13
                       ? "东线 / 维修区"
-                      : "中央街道";
+                      : "日落大道 / SUNSET BLVD";
           ui.toast.style.opacity =
             state.toast > 0 ? Math.min(1, state.toast * 2) : 0;
           ui.radio.hidden = state.radio <= 0;
@@ -2679,15 +2692,33 @@
           ui.damage.style.opacity =
             Math.min(0.7, state.hurt) +
             (player.hp < 25 && state.mode === "playing" ? 0.12 : 0);
+          $("flashlight-tip").hidden = flashlight.visible || state.mode !== "playing";
+          $("lamp-state").textContent = flashlight.visible ? "F 手电 · 开启" : "F 手电 · 关闭";
+          if(state.gate){
+            const dest=guide.target();
+            ui.objective.textContent = ally.hp<=0 ? "林倒地了 · 靠近按 E 扶起，再继续路线。" :
+              dest ? `${guide.stage+1}/3 · 跟随林前往${dest.name} · ${Math.round(Math.hypot(dest.x-player.x,dest.z-player.z))} m` : "路线完成 · 与林守住泵站，抵御尸潮。";
+            const waypoint=$("waypoint");waypoint.hidden=!dest;
+            if(dest){
+              camera.updateMatrixWorld(true);
+              const p=v3(dest.x,dest.y+2.4,dest.z).project(camera);
+              const ahead=v3(dest.x-camera.position.x,dest.y-camera.position.y,dest.z-camera.position.z).dot(camera.getWorldDirection(v3()))>0;
+              waypoint.style.left=clamp((p.x*.5+.5)*innerWidth,220,innerWidth-220)+'px';
+              waypoint.style.top=(ahead?clamp((-p.y*.5+.5)*innerHeight,150,innerHeight-240):innerHeight-240)+'px';
+              waypoint.textContent=(ahead?'◇ ':'↶ ')+dest.short+' · '+Math.round(Math.hypot(dest.x-player.x,dest.z-player.z))+' m';
+            }
+          } else $("waypoint").hidden=true;
           findInteraction();
           drawMap();
         }
         function reset() {
-          for (const e of enemies) {
+          for (const e of [...enemies, ...corpses]) {
             e.g.visible = false;
             enemyPool.push(e);
           }
           enemies.length = 0;
+          corpses.length = 0;
+          ally.resetPose();
           effects.length = 0;
           particleMesh.count = 0;
           Object.assign(state, {
@@ -2741,6 +2772,8 @@
           });
           ally.g.position.set(3, 0, 35);
           ally.g.rotation.set(0, 0, 0);
+          ally.target=null;ally.shot=0;ally.aim=0;ally.animate(0,false);allyTracer.visible=false;
+          guide.reset();state.flashlightUsed=false;
           gateGroup.position.y = 0;
           gateCollider.active = true;
           barriers.forEach((b) => {
@@ -2766,7 +2799,8 @@
           ui.pause.hidden = true;
           ui.help.hidden = false;
           ui.hud.style.display = "block";
-          ui.objective.textContent = "熟悉操作，射击左侧标靶，再走向出口。";
+          ui.objective.textContent = "按 F 打开手电，跟随林走向出口。左侧可以练枪。";
+          radio("街道断电了。按 F 打开手电筒，准备好就跟我出门。",7);
           updateUI();
           updateCamera(0);
         }
@@ -2868,7 +2902,7 @@
           if (e.repeat) return;
           if (e.code === "KeyR") reload();
           if (e.code === "KeyE") interact();
-          if (e.code === "KeyF") flashlight.visible = !flashlight.visible;
+          if (e.code === "KeyF") toggleFlashlight();
           if (e.code === "Space" && player.grounded) {
             player.vy = 7;
             player.grounded = false;
@@ -2901,6 +2935,7 @@
           renderer.setPixelRatio(Math.min(devicePixelRatio, high ? 1.5 : 1));
           renderer.shadowMap.enabled = high;
           sun.castShadow = high;
+          flashlight.castShadow = high;
           scene.traverse((o) => {
             if (o.isMesh && o.material) o.material.needsUpdate = true;
           });
@@ -2948,7 +2983,7 @@
           gun.position.set(
             aiming ? -0.235 : Math.sin(state.time * 10) * (moving ? 0.009 : 0),
             -reloadDip * 0.25 - (player.sprinting ? 0.12 : 0),
-            -0.18 + player.recoil * 1.3,
+            -0.25 + player.recoil * 1.3,
           );
           gun.rotation.set(
             -reloadDip * 0.45,
@@ -3000,6 +3035,7 @@
             updateUI();
             uiClock = 0;
           }
+          district.update(state.mode === "menu" ? now / 1000 : state.time);
           renderer.autoClear = true;
           renderer.render(scene, camera);
           if (state.mode !== "menu") {
@@ -3015,9 +3051,16 @@
         if (new URLSearchParams(location.search).has("test"))
           window.__game = {
             state,
+            guide,
+            scene,
+            district,
+            flashlight,
+            toggleFlashlight,
+            allyTracer,
             player,
             ally,
             enemies,
+            corpses,
             barriers,
             supplies,
             targets,
