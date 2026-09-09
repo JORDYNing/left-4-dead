@@ -24,7 +24,7 @@ GitHub Pages 从 `main` 分支根目录发布。推送更新后，页面会自�
 
 ```bash
 mkdir -p logs
-agent-browser --session afterlight open http://localhost:8000
+agent-browser --session afterlight open 'http://localhost:8000/?test=1'
 agent-browser --session afterlight wait --fn 'Boolean(window.__game)'
 node scripts/verify.cjs afterlight
 ```
