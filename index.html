@@ -1673,6 +1673,7 @@
             enemies.splice(enemies.indexOf(e), 1);
             tactics.release(e);
             e.die(); e.corpseTime = 0; e.deathFlash = .18;
+            e.deathUpperY=e.upper.position.y;e.deathUpperTilt=e.upper.rotation.x;
             e.deathVelocity=direction.clone().multiplyScalar((headshot?2.6:1.7)/(e.type==='brute'?1.8:1));
             e.deathTilt=(headshot?-.1:.06)*(e.id%2?1:-1);
             e.deathHeadshot=headshot;e.landed=false;
@@ -2056,8 +2057,11 @@
               e.deathVelocity.multiplyScalar(Math.exp(-7*dt));
             }
             e.g.rotation.z=e.deathTilt*Math.sin(Math.min(1,e.corpseTime/e.deathLandingTime)*Math.PI);
-            e.upper.position.y=T.MathUtils.damp(e.upper.position.y,0,12,dt);
-            e.upper.rotation.x=T.MathUtils.damp(e.upper.rotation.x,0,12,dt);
+            // Release crouch/stagger with the fall; fast standing recovery would
+            // lift a crouched enemy during the first frames of its collapse.
+            const settle=1-T.MathUtils.smoothstep(e.corpseTime,0,e.deathLandingTime);
+            e.upper.position.y=e.deathUpperY*settle;
+            e.upper.rotation.x=e.deathUpperTilt*settle;
             e.g.position.set(e.x,e.y,e.z);
             if(!e.landed&&e.corpseTime>=e.deathLandingTime){
               e.landed=true;

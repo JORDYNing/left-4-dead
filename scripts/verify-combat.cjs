@@ -148,6 +148,60 @@ const suite = async function () {
     assert(Number(document.querySelector('#hitmarker').style.opacity) === 0, 'Ally triggered personal marker');
   });
 
+  await test('all enemies immediately collapse from every live pose at 30/60/120 fps', () => {
+    let cases = 0, latestLanding = 0, smallestFirstFrameDrop = Infinity;
+    const play = g.combat.audio.play;
+    try {
+      reset();
+      for (const type of Object.keys(g.types)) for (const pose of ['paused', 'walk', 'attack', 'crouch'])
+        for (const kill of ['body', 'head', 'ally']) for (const fps of [30, 60, 120]) {
+          g.updateEffects(20); // Recycle the previous corpse and blood between cases.
+          const e = g.spawnEnemy(type, {x: 0, z: 14});
+          e.animate(0, pose === 'walk', pose === 'attack');
+          if (pose === 'crouch') { e.upper.position.y = -.4; e.upper.rotation.x = -.12; }
+          e.animate(.2, pose === 'walk', pose === 'attack');
+          const headY = () => e.head.getWorldPosition(new T.Vector3()).y - e.y;
+          const label = [type, pose, kill, fps].join('/');
+          let impacts = 0, contactHeight = null;
+          g.combat.audio.play = (kind, ...args) => {
+            if (kind === 'bodyFall') { impacts++; contactHeight = headY(); }
+            return play(kind, ...args);
+          };
+          g.hurtEnemy(e, 9999, new T.Vector3(0, 1, 14), kill === 'ally', kill === 'head', new T.Vector3(1, 0, 0));
+          assert(!g.enemies.includes(e) && g.corpses.includes(e), label + ': still alive after lethal hit');
+          assert(!e.landed && impacts === 0, label + ': impact happened before falling');
+          const initial = headY(); step(1 / fps, fps);
+          const drop = initial - headY(); smallestFirstFrameDrop = Math.min(smallestFirstFrameDrop, drop);
+          assert(drop > .001, label + ': no downward motion in first frame (' + drop + ')');
+          let landingTime = null;
+          for (let frame = 2; frame <= Math.round(.6 * fps); frame++) {
+            step(1 / fps, fps);
+            if (e.landed && landingTime === null) landingTime = frame / fps;
+          }
+          assert(landingTime !== null && landingTime <= .21, label + ': delayed landing ' + landingTime);
+          assert(headY() < .35 * e.g.scale.y, label + ': body is still upright');
+          assert(impacts === 1 && contactHeight < .35 * e.g.scale.y, label + ': landing sound is out of sync');
+          assert(g.bloodPools.filter(p => p.life > 0).length === 1, label + ': missing/duplicate landing blood');
+          latestLanding = Math.max(latestLanding, landingTime); cases++;
+        }
+    } finally { g.combat.audio.play = play; }
+    return {cases, latestLanding, smallestFirstFrameDrop};
+  });
+
+  await test('recycled corpses stand up and can immediately fall again', () => {
+    for (const type of Object.keys(g.types)) {
+      reset(); const e = g.spawnEnemy(type, {x: 0, z: 14});
+      g.hurtEnemy(e, 9999, new T.Vector3(0, 1, 14)); step(8.1);
+      assert(!g.corpses.includes(e) && !e.g.visible, type + ': corpse not recycled');
+      const reused = g.spawnEnemy(type, {x: 0, z: 14});
+      assert(reused === e && reused.head.getWorldPosition(new T.Vector3()).y > 1.3 * e.g.scale.y, type + ': reuse kept fallen pose');
+      assert(e.meshes.every(m => m.material.opacity === 1), type + ': reuse kept faded materials');
+      g.hurtEnemy(e, 9999, new T.Vector3(0, 1, 14)); step(.2);
+      assert(e.landed && e.head.getWorldPosition(new T.Vector3()).y < .35 * e.g.scale.y, type + ': reused death was delayed');
+    }
+    return {types: Object.keys(g.types)};
+  });
+
   await test('reload, empty magazine, sprint and pause cannot spawn a shot', () => {
     reset(); g.player.ammo = 4; g.reload(); g.shoot(); assert(g.combat.recoil.shots === 0 && g.player.ammo === 4, 'Reload fired');
     step(2); assert(g.player.ammo === 30 && g.player.reserve === 154, 'Reload ammo conservation regressed');

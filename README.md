@@ -49,7 +49,7 @@ node scripts/verify-combat.cjs afterlight
 node scripts/verify-tactics.cjs afterlight
 ```
 
-四组脚本共 57 项检查，结果保存在 `logs/verification.json`、`logs/night-verification.json`、`logs/combat-verification.json` 和 `logs/tactics-verification.json`。战术检查包括分散刷新、五种模型、完整带路路线、实体碰撞、包抄 / 退守、死亡回收及 48 只敌人压力。射击检查覆盖 30/60/120 FPS 的射速与回弹、实际射线、瞄准、鼠标输入、抛壳、碰撞、命中/爆头/击杀、特效回收与重开，并通过 OfflineAudioContext 验证四层音频的实际波形。另生成 `logs/rifle-preview.wav`，可试听单发和连射。
+四组脚本共 59 项检查，结果保存在 `logs/verification.json`、`logs/night-verification.json`、`logs/combat-verification.json` 和 `logs/tactics-verification.json`。战术检查包括分散刷新、五种模型、完整带路路线、实体碰撞、包抄 / 退守、死亡回收及 48 只敌人压力。射击检查覆盖 30/60/120 FPS 的射速与回弹、实际射线、瞄准、鼠标输入、抛壳、碰撞、命中/爆头/击杀、特效回收与重开，并通过 OfflineAudioContext 验证四层音频的实际波形。死亡检查验证五类敌人在不同姿态、击杀来源与帧率下立即下落、约 0.2 秒触地、音效与血迹同步，以及模型回收后的再次倒地。另生成 `logs/rifle-preview.wav`，可试听单发和连射。
 
 ## 文件
 
