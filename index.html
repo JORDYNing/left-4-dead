@@ -1,0 +1,3065 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#283335" />
+    <title>余光 AFTERLIGHT · 隔离区 04</title>
+    <style>
+      :root {
+        --ink: #e8e7de;
+        --muted: #adb9b4;
+        --glass: #202c2de8;
+        --line: #b9ccc333;
+        --orange: #eba267;
+        --green: #a0ceb3;
+        --red: #de7165;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        overflow: hidden;
+        background: #283335;
+        color: var(--ink);
+        font:
+          14px/1.6 -apple-system,
+          BlinkMacSystemFont,
+          "PingFang SC",
+          "Microsoft YaHei",
+          sans-serif;
+      }
+      button,
+      input,
+      select {
+        font: inherit;
+      }
+      button {
+        cursor: pointer;
+      }
+      button:focus-visible,
+      input:focus-visible,
+      select:focus-visible {
+        outline: 2px solid var(--orange);
+        outline-offset: 5px;
+      }
+      button:disabled {
+        opacity: 0.5;
+        cursor: wait;
+      }
+      canvas#world {
+        display: block;
+        width: 100vw;
+        height: 100vh;
+      }
+      button {
+        border: 1px solid var(--line);
+        background: transparent;
+        color: var(--ink);
+        padding: 12px 20px;
+      }
+      button:hover {
+        background: #ffffff12;
+      }
+      button.primary {
+        background: var(--orange);
+        color: #253032;
+        border: 0;
+        font-weight: 700;
+        min-width: 220px;
+        display: flex;
+        justify-content: space-between;
+        gap: 36px;
+      }
+      button.primary:hover {
+        background: #f8bb8b;
+      }
+      [hidden] {
+        display: none !important;
+      }
+      .mono {
+        font-family: "SFMono-Regular", Consolas, monospace;
+        font-size: 11px;
+        letter-spacing: 2px;
+      }
+      .muted {
+        color: var(--muted);
+      }
+      .orange {
+        color: var(--orange);
+      }
+      .screen {
+        position: fixed;
+        inset: 0;
+        z-index: 20;
+        padding: 36px 5.2vw;
+        background: linear-gradient(
+          90deg,
+          #202e32ed 0%,
+          #202e32ba 43%,
+          #202e3210 100%
+        );
+        display: flex;
+        flex-direction: column;
+      }
+      .masthead {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid var(--line);
+        padding-bottom: 19px;
+        gap: 20px;
+      }
+      .brand {
+        font-weight: 750;
+        letter-spacing: 5px;
+      }
+      .brand i {
+        display: inline-block;
+        background: var(--orange);
+        width: 12px;
+        height: 12px;
+        margin-right: 13px;
+        transform: rotate(-15deg);
+      }
+      .status {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 11px;
+        letter-spacing: 2px;
+      }
+      .status:before {
+        content: "";
+        width: 5px;
+        height: 5px;
+        border-radius: 100%;
+        background: var(--green);
+      }
+      .intro {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 30px;
+      }
+      .intro-copy {
+        max-width: 580px;
+      }
+      .eyebrow {
+        color: var(--orange);
+        letter-spacing: 4px;
+        font-size: 11px;
+        margin-bottom: 22px;
+      }
+      h1 {
+        font-size: clamp(74px, 10vw, 154px);
+        line-height: 0.95;
+        margin: 0;
+        letter-spacing: -8px;
+        font-weight: 850;
+      }
+      h1 span {
+        display: block;
+        font:
+          clamp(25px, 3.3vw, 48px) / 1.5 Impact,
+          "Arial Narrow",
+          sans-serif;
+        letter-spacing: 12px;
+        margin-top: 13px;
+      }
+      .lede {
+        max-width: 330px;
+        color: #c4cfca;
+        font-size: 14px;
+        line-height: 1.9;
+        margin: 28px 0 32px;
+      }
+      .start-meta {
+        margin-top: 15px;
+        color: var(--muted);
+        font-size: 11px;
+      }
+      .dossier {
+        width: 266px;
+        align-self: center;
+        margin-top: 90px;
+        background: #253333d9;
+        border: 1px solid var(--line);
+        padding: 23px;
+        backdrop-filter: blur(8px);
+      }
+      .dossier-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .sector {
+        font:
+          64px/1 Impact,
+          sans-serif;
+        color: var(--orange);
+      }
+      .dossier h2 {
+        font-size: 18px;
+        letter-spacing: 3px;
+        margin: 14px 0 4px;
+      }
+      .route-line {
+        border-top: 1px solid var(--line);
+        padding-top: 12px;
+        margin-top: 12px;
+        display: flex;
+        justify-content: space-between;
+        font-size: 12px;
+      }
+      .map-sketch {
+        width: 100%;
+        height: 145px;
+        margin: 12px 0;
+        opacity: 0.9;
+      }
+      .footer {
+        display: flex;
+        gap: 24px;
+        justify-content: space-between;
+        align-items: center;
+        border-top: 1px solid var(--line);
+        padding-top: 17px;
+        font-size: 11px;
+        color: var(--muted);
+      }
+      .settings {
+        display: flex;
+        gap: 17px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .settings label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      select {
+        background: #2a383b;
+        color: var(--ink);
+        border: 1px solid var(--line);
+        padding: 3px 8px;
+      }
+      input[type="range"] {
+        width: 80px;
+        accent-color: var(--orange);
+      }
+      #hud {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 3;
+        display: none;
+        text-shadow: 0 1px 5px #182223;
+      }
+      .hud-top {
+        position: absolute;
+        top: 26px;
+        left: 30px;
+        right: 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+      }
+      .location {
+        border-left: 3px solid var(--orange);
+        padding-left: 12px;
+      }
+      .location strong {
+        display: block;
+        font-size: 16px;
+        letter-spacing: 3px;
+      }
+      .location small {
+        font-size: 10px;
+        letter-spacing: 2px;
+      }
+      .wave-box {
+        min-width: 205px;
+        text-align: right;
+      }
+      .wave-box b {
+        font:
+          36px/1.1 Impact,
+          sans-serif;
+      }
+      .wave-box .label {
+        letter-spacing: 3px;
+        font-size: 10px;
+        margin-right: 8px;
+      }
+      .wave-sub {
+        font-size: 12px;
+        color: #d3dfd8;
+        margin-top: 6px;
+      }
+      .top-stats {
+        margin-top: 12px;
+        color: #c2ccc8;
+        font: 11px monospace;
+        letter-spacing: 1px;
+      }
+      .bottom-left {
+        position: absolute;
+        left: 30px;
+        bottom: 27px;
+        display: flex;
+        flex-direction: column;
+        gap: 17px;
+      }
+      .partner {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+      .avatar {
+        background: #384d50bd;
+        border: 1px solid #a0ceb367;
+        width: 34px;
+        height: 38px;
+        display: grid;
+        place-items: center;
+        color: var(--green);
+        font-weight: 700;
+      }
+      .partner strong {
+        font-size: 12px;
+        letter-spacing: 2px;
+      }
+      .partner small {
+        display: block;
+        font-size: 10px;
+        color: #b8cec2;
+      }
+      .health-line {
+        display: flex;
+        align-items: baseline;
+        gap: 13px;
+      }
+      .health-line b {
+        font:
+          42px/1 Impact,
+          sans-serif;
+      }
+      .health-line .cross {
+        font-size: 27px;
+        color: var(--green);
+      }
+      .health-line small {
+        font: 11px monospace;
+        color: #b2c2ba;
+      }
+      .bar {
+        height: 4px;
+        width: 210px;
+        background: #172527b0;
+        margin-top: 8px;
+      }
+      .bar > i {
+        display: block;
+        height: 100%;
+        background: var(--green);
+        transition: width 0.1s;
+      }
+      .bar.stamina {
+        height: 2px;
+        margin-top: 6px;
+        opacity: 0.7;
+      }
+      .bar.stamina i {
+        background: var(--ink);
+      }
+      .bottom-right {
+        position: absolute;
+        right: 30px;
+        bottom: 26px;
+        text-align: right;
+      }
+      .weapon-name {
+        font-size: 10px;
+        letter-spacing: 3px;
+        color: #c1cec8;
+      }
+      .ammo {
+        font:
+          58px/1.2 Impact,
+          sans-serif;
+      }
+      .ammo span {
+        font: 22px monospace;
+        color: #c1cec8;
+        margin-left: 10px;
+      }
+      .ammo em {
+        font: 15px monospace;
+        color: #93a9a2;
+        margin: 0 9px;
+      }
+      .action-hint {
+        font-size: 10px;
+        letter-spacing: 1px;
+        color: #bdccc4;
+      }
+      .center-dot {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 3px;
+        height: 3px;
+        border-radius: 50%;
+        background: #fff;
+        transform: translate(-50%, -50%);
+      }
+      #crosshair {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 28px;
+        height: 28px;
+        transform: translate(-50%, -50%);
+        transition:
+          width 0.09s,
+          height 0.09s;
+      }
+      #crosshair:before,
+      #crosshair:after {
+        content: "";
+        position: absolute;
+        background: #edf1e9;
+        box-shadow: 0 0 2px #000;
+      }
+      #crosshair:before {
+        width: 1px;
+        height: 6px;
+        left: 50%;
+        top: 0;
+        box-shadow: 0 22px #edf1e9;
+      }
+      #crosshair:after {
+        width: 6px;
+        height: 1px;
+        top: 50%;
+        left: 0;
+        box-shadow: 22px 0 #edf1e9;
+      }
+      #hitmarker {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        font: 32px monospace;
+        transform: translate(-50%, -50%);
+        opacity: 0;
+        color: var(--orange);
+      }
+      #damage {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 4;
+        box-shadow: inset 0 0 180px 50px #b82b28;
+        opacity: 0;
+      }
+      #toast {
+        position: absolute;
+        top: 20%;
+        left: 50%;
+        transform: translateX(-50%);
+        text-align: center;
+        transition: opacity 0.2s;
+        white-space: pre-line;
+        opacity: 0;
+      }
+      #toast strong {
+        font-size: 28px;
+        letter-spacing: 5px;
+      }
+      #toast small {
+        display: block;
+        font-size: 12px;
+        letter-spacing: 1px;
+        color: #d0ddd6;
+        margin-top: 6px;
+      }
+      #interact {
+        position: absolute;
+        bottom: 24%;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 10px 16px;
+        background: #263734db;
+        border: 1px solid var(--line);
+        font-size: 12px;
+        white-space: nowrap;
+      }
+      kbd {
+        display: inline-grid;
+        place-items: center;
+        min-width: 23px;
+        height: 23px;
+        border: 1px solid #b7c8c14d;
+        background: #e5ead00a;
+        border-radius: 3px;
+        font: 11px monospace;
+        color: #f0eee1;
+        margin-right: 8px;
+        padding: 0 5px;
+      }
+      #objective {
+        position: absolute;
+        top: 104px;
+        left: 30px;
+        font-size: 12px;
+        color: #dce5dc;
+        max-width: 320px;
+      }
+      #objective:before {
+        content: "◇";
+        color: var(--orange);
+        margin-right: 9px;
+      }
+      #minimap {
+        position: absolute;
+        right: 30px;
+        top: 136px;
+        width: 145px;
+        height: 180px;
+        border: 1px solid var(--line);
+        background: #1e2d2bba;
+      }
+      #radio {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        bottom: 70px;
+        max-width: 390px;
+        text-align: center;
+        font-size: 12px;
+        color: #d7e6da;
+        background: #23332cb3;
+        padding: 6px 12px;
+      }
+      #reload {
+        position: absolute;
+        top: 58%;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 11px;
+        letter-spacing: 3px;
+        color: var(--orange);
+      }
+      #help {
+        position: fixed;
+        z-index: 12;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: min(480px, 90vw);
+        padding: 28px 32px;
+        background: #243438f5;
+        border: 1px solid #d9e4d945;
+        box-shadow: 0 25px 70px #101c2255;
+      }
+      #help h2 {
+        font-size: 22px;
+        margin: 0 0 5px;
+        letter-spacing: 3px;
+      }
+      #help p {
+        font-size: 12px;
+        color: var(--muted);
+        margin: 0 0 21px;
+      }
+      .controls {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 13px 20px;
+        font-size: 12px;
+      }
+      .help-foot {
+        margin-top: 24px;
+        border-top: 1px solid var(--line);
+        padding-top: 15px;
+        font-size: 12px;
+        color: var(--orange);
+      }
+      .modal-screen {
+        background: #1c2b2fbc;
+        backdrop-filter: blur(9px);
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+      }
+      .modal-screen h2 {
+        font-size: clamp(35px, 6vw, 72px);
+        letter-spacing: 8px;
+        margin: 15px 0;
+      }
+      .modal-screen p {
+        color: var(--muted);
+        max-width: 420px;
+        font-size: 13px;
+      }
+      .modal-screen .primary {
+        margin: 22px auto 0;
+      }
+      .results {
+        display: flex;
+        gap: 44px;
+        margin: 25px 0;
+      }
+      .results strong {
+        font:
+          44px Impact,
+          sans-serif;
+        display: block;
+      }
+      .results small {
+        font-size: 11px;
+        color: var(--muted);
+        letter-spacing: 2px;
+      }
+      #load-error {
+        color: #ffb6a0;
+        max-width: 470px;
+        font-size: 12px;
+        margin-top: 15px;
+      }
+      #fatal {
+        z-index: 100;
+        background: #223236;
+      }
+      #pause .settings {
+        justify-content: center;
+        margin-top: 16px;
+      }
+      #mobile-note {
+        display: none;
+      }
+      .intro {
+        min-height: 0;
+      }
+      .dossier {
+        margin-top: 0;
+      }
+      @media (max-height: 760px) {
+        .dossier {
+          padding: 18px;
+        }
+        .map-sketch {
+          height: 105px;
+          margin: 8px 0;
+        }
+        .sector {
+          font-size: 52px;
+        }
+        .dossier h2 {
+          margin-top: 8px;
+        }
+        .lede {
+          margin: 20px 0 25px;
+        }
+        .eyebrow {
+          margin-bottom: 16px;
+        }
+      }
+      @media (max-width: 800px) {
+        .screen {
+          padding: 22px 6vw;
+        }
+        .dossier {
+          display: none;
+        }
+        h1 {
+          font-size: 100px;
+        }
+        .intro {
+          align-items: center;
+        }
+        .lede {
+          margin: 20px 0;
+        }
+        .footer {
+          align-items: flex-start;
+          gap: 12px;
+          flex-direction: column;
+        }
+        .masthead .status {
+          display: none;
+        }
+        .hud-top {
+          top: 18px;
+          left: 18px;
+          right: 18px;
+        }
+        .bottom-left {
+          left: 18px;
+          bottom: 18px;
+        }
+        .bottom-right {
+          right: 18px;
+          bottom: 18px;
+        }
+        #objective {
+          left: 18px;
+          top: 85px;
+          max-width: 230px;
+        }
+        #minimap {
+          right: 18px;
+          top: 120px;
+          width: 100px;
+          height: 125px;
+        }
+        .bar {
+          width: 155px;
+        }
+        #radio {
+          bottom: 155px;
+          max-width: 75vw;
+          width: max-content;
+        }
+      }
+      @media (pointer: coarse) {
+        #mobile-note {
+          display: block;
+          color: var(--orange);
+          font-size: 12px;
+        }
+      }
+      @media (max-height: 620px) {
+        .screen {
+          padding-top: 16px;
+          padding-bottom: 16px;
+        }
+        h1 {
+          font-size: 76px;
+        }
+        .lede {
+          margin: 13px 0;
+        }
+        .eyebrow {
+          margin-bottom: 12px;
+        }
+        .dossier {
+          margin-top: 0;
+        }
+        .intro {
+          padding: 18px 0;
+        }
+        .footer {
+          padding-top: 9px;
+        }
+        .controls {
+          gap: 8px;
+        }
+        #help {
+          padding: 20px 26px;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          transition: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="world" aria-label="余光，第一人称生存游戏"></canvas>
+    <div id="menu" class="screen">
+      <header class="masthead">
+        <div class="brand"><i></i>余光 / AFTERLIGHT</div>
+        <div class="status">紧急广播仍在继续 · 频率 104.6</div>
+      </header>
+      <main class="intro">
+        <div class="intro-copy">
+          <div class="eyebrow">合作生存 / 隔离区 04</div>
+          <h1>余光<span>AFTERLIGHT</span></h1>
+          <p class="lede">
+            天亮之前，别让这条街安静下来。<br />与你的搭档守住泵站，在尸潮之间寻找补给。
+          </p>
+          <button id="start" class="primary" disabled>
+            <span>正在接通电台…</span><span>→</span>
+          </button>
+          <div class="start-meta">单人 + AI 搭档 · 无尽波次 · 鼠标 / 键盘</div>
+          <div id="load-error" role="alert"></div>
+          <div id="mobile-note">请使用带鼠标和键盘的电脑游玩。</div>
+        </div>
+        <aside class="dossier">
+          <div class="dossier-top">
+            <span class="mono">QUARANTINE<br />ZONE</span
+            ><span class="sector">04</span>
+          </div>
+          <h2>泵站旧街</h2>
+          <div class="muted" style="font-size: 11px">最后一处亮着灯的街区</div>
+          <svg
+            class="map-sketch"
+            viewBox="0 0 210 145"
+            fill="none"
+            aria-label="西侧诊所和东侧维修区两条路线通向泵站"
+          >
+            <path
+              d="M105 129V105M105 105H39V43H105M105 105H172V43H105M105 43V17"
+              stroke="#a0ceb3"
+              stroke-width="2"
+              stroke-dasharray="4 4"
+            />
+            <path
+              d="M80 10H130V32H80ZM80 116H130V140H80ZM20 60H58V87H20ZM151 60H190V87H151Z"
+              fill="#78998c33"
+              stroke="#a0ceb3"
+            />
+            <path d="M68 52H140V95H68Z" stroke="#7c928788" />
+            <text
+              x="105"
+              y="25"
+              text-anchor="middle"
+              fill="#e8e7de"
+              font-size="9"
+            >
+              泵站大厅
+            </text>
+            <text
+              x="105"
+              y="132"
+              text-anchor="middle"
+              fill="#eba267"
+              font-size="9"
+            >
+              安全屋
+            </text>
+            <text
+              x="39"
+              y="77"
+              text-anchor="middle"
+              fill="#e8e7de"
+              font-size="9"
+            >
+              诊所
+            </text>
+            <text
+              x="170"
+              y="77"
+              text-anchor="middle"
+              fill="#e8e7de"
+              font-size="9"
+            >
+              维修区
+            </text>
+            <circle cx="105" cy="105" r="4" fill="#eba267" />
+          </svg>
+          <div class="route-line">
+            <span>西线 · 诊所通道</span><span class="muted">医疗</span>
+          </div>
+          <div class="route-line">
+            <span>东线 · 维修平台</span><span class="muted">弹药</span>
+          </div>
+        </aside>
+      </main>
+      <footer class="footer">
+        <span>活下去。补充弹药。照应彼此。</span>
+        <div class="settings">
+          <label
+            >画质
+            <select id="quality">
+              <option value="low">流畅</option>
+              <option value="high" selected>标准</option>
+            </select></label
+          ><label
+            >灵敏度
+            <input
+              id="sensitivity"
+              aria-label="鼠标灵敏度"
+              type="range"
+              min="0.5"
+              max="2"
+              step="0.1"
+              value="1" /></label
+          ><label><input id="sound" type="checkbox" checked /> 声音</label>
+        </div>
+        <span class="mono">WASD / R / E / SHIFT</span>
+      </footer>
+    </div>
+    <div id="hud">
+      <div class="hud-top">
+        <div class="location">
+          <small>隔离区 04 / 泵站旧街</small
+          ><strong id="zone">出生安全屋</strong>
+        </div>
+        <div class="wave-box">
+          <span class="label">WAVE</span><b id="wave">00</b>
+          <div id="wave-sub" class="wave-sub">训练阶段 · 暂无感染者</div>
+          <div class="top-stats">
+            得分 <span id="score">00000</span>　击杀 <span id="kills">0</span>
+          </div>
+        </div>
+      </div>
+      <div id="objective">熟悉操作，射击左侧标靶，再走向出口。</div>
+      <canvas
+        id="minimap"
+        width="174"
+        height="216"
+        aria-label="街区战术地图"
+      ></canvas>
+      <div class="center-dot"></div>
+      <div id="crosshair"></div>
+      <div id="hitmarker">×</div>
+      <div id="toast"><strong></strong><small></small></div>
+      <div id="interact" hidden></div>
+      <div id="reload" hidden>正在换弹</div>
+      <div class="bottom-left">
+        <div class="partner">
+          <div class="avatar">林</div>
+          <div>
+            <strong>林 · AI 搭档</strong
+            ><small id="ally-status">掩护 / 随行</small>
+          </div>
+        </div>
+        <div>
+          <div class="health-line">
+            <span class="cross">+</span><b id="health">100</b
+            ><small>/ 100</small>
+          </div>
+          <div class="bar"><i id="health-bar" style="width: 100%"></i></div>
+          <div class="bar stamina">
+            <i id="stamina-bar" style="width: 100%"></i>
+          </div>
+        </div>
+      </div>
+      <div class="bottom-right">
+        <div class="weapon-name">AR–04 / 自动步枪</div>
+        <div class="ammo">
+          <b id="ammo">30</b><em>/</em><span id="reserve">180</span>
+        </div>
+        <div id="ammo-hint" class="action-hint">
+          R 换弹　·　E 补给　·　H 操作提示
+        </div>
+      </div>
+      <div id="radio" hidden></div>
+    </div>
+    <div id="damage"></div>
+    <section id="help" hidden>
+      <div class="eyebrow">先在这里练习，外面还很安静</div>
+      <h2>欢迎来到安全屋</h2>
+      <p>左侧有三个标靶。靠近正前方出口，开始生存。</p>
+      <div class="controls">
+        <div><kbd>WASD</kbd>移动</div>
+        <div><kbd>鼠标</kbd>转动视角</div>
+        <div><kbd>左键</kbd>按住连续射击</div>
+        <div><kbd>R</kbd>换弹</div>
+        <div><kbd>Shift</kbd>奔跑，消耗体力</div>
+        <div><kbd>Space</kbd>跳跃 / 越过路障</div>
+        <div><kbd>E</kbd>使用补给 / 扶起搭档</div>
+        <div><kbd>右键</kbd>瞄准</div>
+        <div><kbd>F</kbd>开关手电</div>
+        <div><kbd>Esc</kbd>暂停 / 释放鼠标</div>
+      </div>
+      <div class="help-foot">
+        <kbd>H</kbd>关闭 / 再次打开此提示　·　打开提示时游戏暂停
+      </div>
+    </section>
+    <div id="pause" class="screen modal-screen" hidden>
+      <div class="eyebrow">电台待机</div>
+      <h2>喘口气。</h2>
+      <p id="pause-text">游戏已暂停。点击继续，重新锁定鼠标。</p>
+      <button id="resume" class="primary">
+        <span>继续生存</span><span>→</span>
+      </button>
+      <p><kbd>H</kbd>查看操作　 <kbd>Esc</kbd>释放鼠标</p>
+    </div>
+    <div id="gameover" class="screen modal-screen" hidden>
+      <div class="eyebrow">信号中断 / RUN ENDED</div>
+      <h2>余光熄灭。</h2>
+      <p>这次你守住了这里。下一次，再多撑一会。</p>
+      <div class="results">
+        <div><strong id="result-wave">0</strong><small>完成波次</small></div>
+        <div><strong id="result-kills">0</strong><small>个人击杀</small></div>
+        <div><strong id="result-score">0</strong><small>得分</small></div>
+      </div>
+      <div id="result-time" class="mono"></div>
+      <button id="restart" class="primary">
+        <span>重新进入安全屋</span><span>↻</span>
+      </button>
+    </div>
+    <div id="fatal" class="screen modal-screen" hidden>
+      <h2>无法启动画面</h2>
+      <p id="fatal-text"></p>
+      <button onclick="location.reload()">重新加载</button>
+    </div>
+    <script>
+      // Only Three.js is downloaded. All geometry, signs, particles and sounds are generated here.
+      (function loadEngine() {
+        const urls = [
+          "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js",
+          "https://unpkg.com/three@0.160.0/build/three.min.js",
+        ];
+        function next() {
+          if (window.THREE) {
+            boot();
+            return;
+          }
+          const url = urls.shift();
+          if (!url) {
+            document.getElementById("load-error").textContent =
+              "无法下载 Three.js。请检查网络后重新加载；首次启动需要连接 CDN。";
+            document.getElementById("start").textContent = "重新连接";
+            document.getElementById("start").disabled = false;
+            document.getElementById("start").onclick = () => location.reload();
+            return;
+          }
+          const s = document.createElement("script");
+          let settled = false;
+          const finish = () => {
+            if (settled) return;
+            settled = true;
+            clearTimeout(timer);
+            s.onload = s.onerror = null;
+            if (!window.THREE) s.remove();
+            next();
+          };
+          const timer = setTimeout(finish, 12000);
+          s.src = url;
+          s.onload = finish;
+          s.onerror = finish;
+          document.head.appendChild(s);
+        }
+        next();
+      })();
+      function boot() {
+        "use strict";
+        const $ = (id) => document.getElementById(id),
+          T = THREE,
+          clamp = T.MathUtils.clamp,
+          rand = (a, b) => a + Math.random() * (b - a),
+          v3 = (x = 0, y = 0, z = 0) => new T.Vector3(x, y, z);
+        const ui = {};
+        [
+          "menu",
+          "start",
+          "hud",
+          "help",
+          "pause",
+          "gameover",
+          "wave",
+          "wave-sub",
+          "zone",
+          "objective",
+          "score",
+          "kills",
+          "health",
+          "health-bar",
+          "stamina-bar",
+          "ammo",
+          "reserve",
+          "ammo-hint",
+          "ally-status",
+          "interact",
+          "reload",
+          "toast",
+          "radio",
+          "damage",
+          "hitmarker",
+        ].forEach((id) => (ui[id] = $(id)));
+        const canvas = $("world");
+        let renderer;
+        try {
+          renderer = new T.WebGLRenderer({
+            canvas,
+            antialias: true,
+            powerPreference: "high-performance",
+          });
+        } catch (e) {
+          $("fatal").hidden = false;
+          $("fatal-text").textContent =
+            "浏览器无法创建 WebGL 画面。请开启硬件加速，或使用支持 WebGL 的桌面浏览器。";
+          return;
+        }
+        renderer.setSize(innerWidth, innerHeight);
+        renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
+        renderer.outputColorSpace = T.SRGBColorSpace;
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = T.PCFSoftShadowMap;
+        renderer.toneMapping = T.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.18;
+        const scene = new T.Scene();
+        scene.background = new T.Color("#b0b9b1");
+        scene.fog = new T.FogExp2("#b0b9b1", 0.0135);
+        const camera = new T.PerspectiveCamera(
+          76,
+          innerWidth / innerHeight,
+          0.06,
+          190,
+        );
+        camera.rotation.order = "YXZ";
+        scene.add(camera);
+        scene.add(new T.HemisphereLight("#e2eadb", "#424d45", 2.25));
+        const sun = new T.DirectionalLight("#ffdbac", 2.5);
+        sun.position.set(-28, 55, 22);
+        sun.castShadow = true;
+        sun.shadow.mapSize.set(1536, 1536);
+        Object.assign(sun.shadow.camera, {
+          left: -47,
+          right: 47,
+          top: 53,
+          bottom: -53,
+          near: 1,
+          far: 130,
+        });
+        sun.shadow.bias = -0.001;
+        sun.shadow.normalBias = 0.04;
+        sun.target.position.set(0, 0, -10);
+        scene.add(sun, sun.target);
+        const world = new T.Group();
+        scene.add(world);
+        const boxGeo = new T.BoxGeometry(1, 1, 1),
+          sphereGeo = new T.IcosahedronGeometry(1, 0),
+          cylinderGeo = new T.CylinderGeometry(1, 1, 1, 8);
+        const mats = new Map(),
+          staticParts = [],
+          occluders = [],
+          colliders = [],
+          targets = [],
+          supplies = [],
+          barriers = [],
+          enemies = [],
+          enemyPool = [],
+          effects = [];
+        function mat(color, emissive = false) {
+          const key = color + "/" + emissive;
+          if (!mats.has(key))
+            mats.set(
+              key,
+              new T.MeshStandardMaterial({
+                color,
+                roughness: 0.87,
+                metalness: 0.05,
+                emissive: emissive ? color : 0,
+                emissiveIntensity: emissive ? 0.6 : 0,
+              }),
+            );
+          return mats.get(key);
+        }
+        function mesh(geo, color, parent = world) {
+          const m = new T.Mesh(
+            geo,
+            typeof color === "object" ? color : mat(color),
+          );
+          m.castShadow = true;
+          m.receiveShadow = true;
+          parent.add(m);
+          return m;
+        }
+        function box(x, y, z, w, h, d, color, solid = false, parent = world) {
+          const m = mesh(boxGeo, color, parent);
+          m.position.set(x, y, z);
+          m.scale.set(w, h, d);
+          if (parent === world) {
+            staticParts.push(m);
+          }
+          if (solid)
+            colliders.push({
+              x,
+              z,
+              w,
+              d,
+              b: y - h / 2,
+              h: y + h / 2,
+              active: true,
+            });
+          return m;
+        }
+        function cylinder(x, y, z, r, h, color, parent = world) {
+          const m = mesh(cylinderGeo, color, parent);
+          m.position.set(x, y, z);
+          m.scale.set(r, h, r);
+          if (parent === world) staticParts.push(m);
+          return m;
+        }
+        function sign(
+          text,
+          x,
+          y,
+          z,
+          w,
+          h,
+          color = "#d9dcca",
+          bg = "#344b47",
+          rotation = 0,
+        ) {
+          const c = document.createElement("canvas");
+          c.width = 768;
+          c.height = 256;
+          const ctx = c.getContext("2d");
+          ctx.fillStyle = bg;
+          ctx.fillRect(0, 0, 768, 256);
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 5;
+          ctx.strokeRect(15, 15, 738, 226);
+          ctx.fillStyle = color;
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.font = 'bold 76px "PingFang SC","Microsoft YaHei",sans-serif';
+          ctx.fillText(text, 384, 132, 700);
+          const texture = new T.CanvasTexture(c);
+          texture.colorSpace = T.SRGBColorSpace;
+          const m = new T.Mesh(
+            new T.PlaneGeometry(w, h),
+            new T.MeshBasicMaterial({ map: texture, side: T.DoubleSide }),
+          );
+          m.position.set(x, y, z);
+          m.rotation.y = rotation;
+          world.add(m);
+          return m;
+        }
+        function wall(x, z, w, d, h = 4.6, color = "#7d887c") {
+          return box(x, h / 2, z, w, h, d, color, true);
+        }
+        // Static boxes are merged by material to keep the scene inexpensive to draw.
+        function batchStatic() {
+          const groups = new Map();
+          for (const m of staticParts) {
+            m.updateMatrix();
+            const g = m.geometry.clone().applyMatrix4(m.matrix).toNonIndexed();
+            const key = m.material.uuid;
+            if (!groups.has(key))
+              groups.set(key, { material: m.material, items: [] });
+            groups.get(key).items.push(g);
+            world.remove(m);
+          }
+          for (const group of groups.values()) {
+            const geom = new T.BufferGeometry();
+            for (const name of ["position", "normal", "uv"]) {
+              const arrays = group.items.map((g) => g.getAttribute(name).array);
+              const data = new Float32Array(
+                arrays.reduce((n, a) => n + a.length, 0),
+              );
+              let at = 0;
+              for (const a of arrays) {
+                data.set(a, at);
+                at += a.length;
+              }
+              geom.setAttribute(
+                name,
+                new T.BufferAttribute(data, name === "uv" ? 2 : 3),
+              );
+            }
+            const m = mesh(geom, group.material);
+            m.castShadow = true;
+            m.receiveShadow = true;
+            occluders.push(m);
+            group.items.forEach((g) => g.dispose());
+          }
+          staticParts.length = 0;
+        }
+        // District: a safehouse, west clinic route, central street, east workshop and north hall.
+        box(0, -0.3, -7, 76, 0.6, 98, "#727c70");
+        box(0, 0.012, -7, 20, 0.025, 86, "#515d56");
+        box(-25, 0.018, -4, 14, 0.03, 76, "#697467");
+        box(26, 0.018, -4, 13, 0.03, 76, "#667163");
+        wall(-37, -7, 1, 98, 6);
+        wall(37, -7, 1, 98, 6);
+        wall(0, -56, 74, 1, 6);
+        wall(0, 42, 74, 1, 5);
+        for (let z = -49; z < 27; z += 7) {
+          box(0, 0.045, z, 0.15, 0.02, 3, "#c3b98f");
+          box(-9.7, 0.09, z, 0.22, 0.18, 6.3, "#a5ad96");
+          box(9.7, 0.09, z, 0.22, 0.18, 6.3, "#a5ad96");
+        }
+        // Buildings outside the play area make a closed, readable skyline without external assets.
+        for (let i = 0; i < 14; i++) {
+          const side = i % 2 === 0 ? -1 : 1,
+            z = -51 + Math.floor(i / 2) * 14,
+            h = 12 + ((i * 7) % 15),
+            x = side * 43;
+          box(x, h / 2, z, 11, h, 11, i % 3 === 0 ? "#768077" : "#90998b");
+          box(x, h + 0.2, z, 11.5, 0.4, 11.5, "#5b685e");
+          for (let row = 0; row < Math.floor(h / 3) - 1; row++)
+            for (let col = 0; col < 3; col++)
+              box(
+                x - side * 5.53,
+                3 + row * 3,
+                z - 3 + col * 3,
+                0.07,
+                1.4,
+                1.05,
+                (row + col + i) % 5 === 0 ? "#b4b897" : "#4d625a",
+              );
+        }
+        box(0, 11, -64, 45, 22, 13, "#909c8f");
+        sign("04  /  WATERWORKS", 0, 14, -57.4, 19, 3.4);
+        for (let x = -18; x <= 18; x += 6)
+          box(x, 6, -57.4, 3, 5, 0.15, "#4f635b");
+        cylinder(19, 19, -62, 4, 9, "#748278");
+        // Safehouse and exit gate.
+        box(0, 0.02, 34.5, 20, 0.04, 15, "#979e89");
+        wall(-10, 34.5, 0.5, 15, 4.3);
+        wall(10, 34.5, 0.5, 15, 4.3);
+        wall(0, 41.8, 20, 0.5, 4.3);
+        wall(-6.2, 27, 7.6, 0.5, 4.3);
+        wall(6.2, 27, 7.6, 0.5, 4.3);
+        box(0, 4, 27, 4.8, 0.6, 0.55, "#4a6257");
+        const gateGroup = new T.Group();
+        world.add(gateGroup);
+        const gate = box(
+          0,
+          1.9,
+          27,
+          4.6,
+          3.8,
+          0.23,
+          "#506358",
+          false,
+          gateGroup,
+        );
+        for (let y = 0.3; y < 3.8; y += 0.3)
+          box(0, y, 27.14, 4.45, 0.025, 0.025, "#71816c", false, gateGroup);
+        const gateCollider = {
+          x: 0,
+          z: 27,
+          w: 4.6,
+          d: 0.3,
+          b: 0,
+          h: 4,
+          active: true,
+        };
+        colliders.push(gateCollider);
+        occluders.push(gate);
+        sign("出口  ↑  EXIT", 0, 4.4, 27.3, 4.9, 0.85, "#c9e7b6", "#345543");
+        sign(
+          "安全屋 / SAFE ROOM",
+          0,
+          3.3,
+          41.5,
+          7,
+          1,
+          "#d6dfbe",
+          "#52604a",
+          Math.PI,
+        );
+        sign("射击训练  ←", -5.9, 3, 27.3, 5.8, 0.8, "#e6c391", "#5d6250");
+        for (let z = 30; z < 39; z += 3) {
+          const arrow = new T.Mesh(
+            new T.ConeGeometry(0.36, 1, 3),
+            mat("#b7cc8d", true),
+          );
+          arrow.rotation.x = -Math.PI / 2;
+          arrow.position.set(0, 0.06, z);
+          arrow.scale.z = 0.04;
+          world.add(arrow);
+        }
+        const safeLight = new T.PointLight("#d5ffc0", 12, 15, 2);
+        safeLight.position.set(0, 3.7, 34);
+        scene.add(safeLight);
+        box(0, 4.1, 34, 4, 0.1, 0.2, mat("#e4efc8", true));
+        for (let z = 31; z <= 37; z += 3) {
+          const g = new T.Group();
+          g.position.set(-8.9, 1.7, z);
+          g.rotation.y = Math.PI / 2;
+          world.add(g);
+          box(0, -0.8, -0.07, 0.12, 1.8, 0.15, "#45564b", false, g);
+          const tm = new T.MeshStandardMaterial({
+            color: "#bfab78",
+            roughness: 0.8,
+          });
+          const target = mesh(
+            new T.CylinderGeometry(0.51, 0.51, 0.08, 20),
+            tm,
+            g,
+          );
+          target.rotation.x = Math.PI / 2;
+          target.userData.target = true;
+          target.userData.reset = 0;
+          const center = mesh(
+            new T.CylinderGeometry(0.17, 0.17, 0.088, 16),
+            "#874e3d",
+            g,
+          );
+          center.rotation.x = Math.PI / 2;
+          center.userData.targetParent = target;
+          targets.push(target, center);
+        }
+        // A west clinic with two entrances; solid blocks create passages rather than dead ends.
+        wall(-15, 5, 5, 35, 4.7, "#87907f");
+        wall(14, 13, 4, 17, 4.7, "#8c927c");
+        wall(-34, -8, 0.6, 22, 4, "#839380");
+        wall(-19, -8, 0.6, 22, 4, "#839380");
+        wall(-30, 3, 8, 0.5, 4);
+        wall(-21, 3, 4, 0.5, 4);
+        wall(-30, -19, 8, 0.5, 4);
+        wall(-21, -19, 4, 0.5, 4);
+        box(-26.5, 0.035, -8, 15, 0.06, 22, "#8d9988");
+        sign("+  社区诊所", -26, 3.6, 3.3, 8, 1, "#dce4cc", "#507967");
+        sign("西线 / 医疗补给", -25, 2, 22, 7, 1, "#d6e2bd", "#426756");
+        box(-32, 0.45, -8, 2, 0.9, 6, "#657c70", true);
+        box(-22, 0.4, -14, 2, 0.8, 4, "#b0b6a0", true);
+        box(-22, 0.91, -14, 1.7, 0.18, 3.8, "#697f6b");
+        // Accessible upper deck and a ramp; enemies use the same height field.
+        box(20, 1.35, -19, 12, 2.7, 14, "#737e70");
+        box(20, 2.76, -19, 12.2, 0.12, 14.2, "#989e87");
+        wall(26.3, -19, 0.5, 14, 3.7);
+        wall(20, -26, 12, 0.5, 3.7);
+        box(14, 3.2, -21, 0.15, 1, 10, "#516656");
+        const rampGeo = new T.BufferGeometry();
+        rampGeo.setAttribute(
+          "position",
+          new T.Float32BufferAttribute(
+            [
+              17, 0, -3, 23, 0, -3, 23, 2.7, -12, 17, 0, -3, 23, 2.7, -12, 17,
+              2.7, -12, 17, 0, -3, 17, 2.7, -12, 17, 0, -12, 23, 0, -3, 23, 0,
+              -12, 23, 2.7, -12,
+            ],
+            3,
+          ),
+        );
+        rampGeo.computeVertexNormals();
+        const ramp = mesh(
+          rampGeo,
+          new T.MeshStandardMaterial({
+            color: "#929a84",
+            side: T.DoubleSide,
+            roughness: 0.9,
+          }),
+        );
+        occluders.push(ramp);
+        for (let z = -4; z > -12; z -= 1)
+          box(20, (-3 - z) * 0.3 + 0.025, z, 5.9, 0.04, 0.06, "#bdba92");
+        sign("东线  →  维修平台", 25, 2.5, 22, 8, 1, "#e6cd9e", "#696a4d");
+        sign("弹药  ↑", 20, 3.5, -25.7, 5, 1);
+        box(30, 1.3, 10, 5, 2.6, 7, "#687b69", true);
+        for (let z = 7; z <= 13; z += 0.5)
+          box(27.45, 1.4, z, 0.06, 1.5, 0.12, "#435b4c");
+        // Northern pump hall, with two large doorways and cover that cannot seal the room.
+        wall(-12, -41, 0.6, 21, 5.5);
+        wall(12, -41, 0.6, 21, 5.5);
+        wall(0, -51, 24, 0.6, 5.5);
+        wall(-9, -31, 6, 0.5, 5);
+        wall(9, -31, 6, 0.5, 5);
+        box(0, 5, -31, 12, 0.6, 0.6, "#738470");
+        sign("泵站 / PUMP HALL", 0, 4.9, -30.6, 10, 1.2);
+        box(0, 0.025, -41, 24, 0.05, 20, "#808d7c");
+        for (const x of [-7, 7]) {
+          cylinder(x, 1.4, -43, 1.6, 2.8, "#647d6d");
+          colliders.push({
+            x,
+            z: -43,
+            w: 3.2,
+            d: 3.2,
+            b: 0,
+            h: 3.2,
+            active: true,
+          });
+          box(x, 3, -43, 3.6, 0.4, 3.6, "#40594b");
+          box(x, 0.5, -36, 3, 1, 2, "#637767", true);
+        }
+        // Street furniture and a disabled bus, all built from simple geometry.
+        function crate(x, z, w = 2, h = 1.1, d = 2) {
+          box(x, h / 2, z, w, h, d, "#8e8967", true);
+          box(x, h + 0.035, z, w + 0.08, 0.07, d + 0.08, "#b1a77f");
+          for (const a of [-0.3, 0.3])
+            box(x + w * a, h / 2, z + d / 2 + 0.02, 0.09, h, 0.04, "#514f3e");
+        }
+        crate(-5, 17, 3, 1, 2);
+        crate(5, 9, 2, 1.1, 3);
+        crate(-6, -24, 3, 1.1, 2);
+        crate(7, -9, 2, 1, 3);
+        crate(-28, 15, 2, 1.1, 3);
+        crate(31, -29, 3, 1.1, 3);
+        crate(-29, -34, 4, 1.1, 2);
+        crate(17, 31, 3, 1.1, 2);
+        box(-4, 1.3, -12, 3, 2.2, 8, "#899078", true);
+        box(-4, 2.55, -12, 3, 0.35, 8, "#bcc1a5");
+        box(-4, 1.95, -7.95, 2.6, 0.8, 0.04, "#405c54");
+        for (const x of [-5.52, -2.48])
+          for (let z = -15; z < -8; z += 1.6)
+            box(x, 2, z, 0.04, 0.78, 1.1, "#405c54");
+        for (const z of [-14.7, -9.5])
+          for (const x of [-5.3, -2.7]) {
+            const wheel = cylinder(x, 0.52, z, 0.5, 0.3, "#344039");
+            wheel.rotation.z = Math.PI / 2;
+          }
+        sign("城市通勤 / 04", -4, 1.2, -7.91, 2.6, 0.45, "#414f44", "#bcb995");
+        for (const [x, z] of [
+          [-11, 22],
+          [11, -24],
+          [-32, -25],
+          [32, 25],
+          [11, -48],
+        ]) {
+          cylinder(x, 3.2, z, 0.09, 6.4, "#495f50");
+          box(x + 1, 6.4, z, 2.2, 0.14, 0.18, "#495f50");
+          box(x + 1.9, 6.32, z, 0.65, 0.12, 0.35, mat("#f3db9d", true));
+        }
+        for (let i = 0; i < 45; i++) {
+          const x = Math.sin(i * 78.17) * 33,
+            z = -50 + ((i * 19.31) % 87);
+          if (Math.abs(x) < 2 && z > 26) continue;
+          box(
+            x,
+            0.035,
+            z,
+            0.2 + (i % 4) * 0.11,
+            0.035,
+            0.18 + (i % 3) * 0.15,
+            i % 2 ? "#acb39a" : "#5e6e5d",
+          );
+        }
+        function makeBarrier(x, z, w) {
+          const group = new T.Group();
+          group.position.set(x, 0, z);
+          world.add(group);
+          box(-w / 2 + 0.2, 0.6, 0, 0.2, 1.2, 0.45, "#665c44", false, group);
+          box(w / 2 - 0.2, 0.6, 0, 0.2, 1.2, 0.45, "#665c44", false, group);
+          const boards = [];
+          for (const y of [0.35, 0.85])
+            boards.push(box(0, y, 0, w, 0.32, 0.24, "#b39b65", false, group));
+          const c = { x, z, w, d: 0.4, b: 0, h: 1.06, active: true };
+          colliders.push(c);
+          const b = { group, boards, c, hp: 110 };
+          boards.forEach((m) => {
+            m.userData.barrier = b;
+            occluders.push(m);
+          });
+          barriers.push(b);
+        }
+        makeBarrier(-25, 8, 8);
+        makeBarrier(28, -1, 6);
+        makeBarrier(1, -28, 5);
+        function supply(x, z, type, y = 0) {
+          const group = new T.Group();
+          group.position.set(x, y, z);
+          world.add(group);
+          const color = type === "med" ? "#8fbda4" : "#c6af76";
+          box(0, 0.38, 0, 1.5, 0.76, 1, "#435d50", false, group);
+          box(0, 0.8, 0, 1.55, 0.12, 1.05, color, false, group);
+          if (type === "med") {
+            box(0, 1, 0.53, 0.7, 0.18, 0.045, "#e8e8ce", false, group);
+            box(0, 1, 0.53, 0.18, 0.65, 0.05, "#e8e8ce", false, group);
+          } else
+            for (const x of [-0.4, 0, 0.4])
+              box(x, 1, 0.1, 0.15, 0.3, 0.45, color, false, group);
+          const halo = mesh(
+            new T.TorusGeometry(0.75, 0.025, 4, 24),
+            mat(color, true),
+            group,
+          );
+          halo.rotation.x = Math.PI / 2;
+          halo.position.y = 0.05;
+          supplies.push({ group, type, x, z, y, ready: 0, halo });
+          sign(
+            type === "med" ? "+ 医疗" : "弹药 / AMMO",
+            x,
+            y + 2,
+            z - 0.45,
+            2.5,
+            0.65,
+            color,
+            "#334e43",
+          );
+        }
+        supply(6.8, 36, "ammo");
+        supply(6.8, 31, "med");
+        supply(-31, -13, "med");
+        supply(22, -22, "ammo", 2.7);
+        supply(-6, -47, "ammo");
+        supply(30, 15, "med");
+        batchStatic();
+        // First-person weapon is rendered separately so nearby walls do not clip its silhouette.
+        const weaponScene = new T.Scene(),
+          weaponCamera = new T.PerspectiveCamera(
+            58,
+            innerWidth / innerHeight,
+            0.02,
+            10,
+          );
+        weaponScene.add(new T.HemisphereLight("#eff2de", "#43564e", 2.8));
+        const gunLight = new T.DirectionalLight("#ffe7be", 2);
+        gunLight.position.set(-2, 4, 2);
+        weaponScene.add(gunLight);
+        const gun = new T.Group();
+        weaponScene.add(gun);
+        box(0.24, -0.2, -0.48, 0.13, 0.15, 0.45, "#374944", false, gun);
+        box(0.24, -0.14, -0.64, 0.11, 0.08, 0.34, "#506159", false, gun);
+        box(0.24, -0.2, -0.86, 0.058, 0.06, 0.26, "#293d37", false, gun);
+        box(
+          0.24,
+          -0.36,
+          -0.46,
+          0.09,
+          0.26,
+          0.13,
+          "#34443d",
+          false,
+          gun,
+        ).rotation.x = -0.15;
+        box(0.24, -0.28, -0.23, 0.14, 0.17, 0.23, "#687566", false, gun);
+        box(0.24, -0.063, -0.53, 0.048, 0.075, 0.05, "#243a31", false, gun);
+        box(0.24, -0.057, -0.77, 0.04, 0.07, 0.04, "#293e32", false, gun);
+        box(
+          0.24,
+          -0.024,
+          -0.77,
+          0.018,
+          0.014,
+          0.02,
+          mat("#c5d695", true),
+          false,
+          gun,
+        );
+        box(
+          0.32,
+          -0.43,
+          -0.2,
+          0.14,
+          0.34,
+          0.18,
+          "#707a5a",
+          false,
+          gun,
+        ).rotation.z = -0.25;
+        box(0.14, -0.31, -0.64, 0.14, 0.12, 0.16, "#92957a", false, gun);
+        box(0.28, -0.31, -0.38, 0.15, 0.14, 0.18, "#8e9377", false, gun);
+        const flash = mesh(
+          new T.ConeGeometry(0.09, 0.25, 5),
+          new T.MeshBasicMaterial({
+            color: "#ffe2a0",
+            transparent: true,
+            opacity: 0.9,
+          }),
+          gun,
+        );
+        flash.rotation.x = -Math.PI / 2;
+        flash.position.set(0.24, -0.19, -1.06);
+        flash.visible = false;
+        const flashlight = new T.SpotLight("#f4f2cd", 22, 27, 0.43, 0.55, 1);
+        camera.add(flashlight, flashlight.target);
+        flashlight.position.set(0.25, -0.1, 0);
+        flashlight.target.position.set(0, 0, -12);
+        flashlight.visible = false;
+        // Shared geometry and a capped pool bound enemy/effect memory over an endless run.
+        const types = {
+          walker: {
+            hp: 76,
+            speed: 1.65,
+            damage: 9,
+            color: "#727c4e",
+            scale: 1,
+            points: 100,
+          },
+          runner: {
+            hp: 48,
+            speed: 3.5,
+            damage: 7,
+            color: "#a57b4f",
+            scale: 0.87,
+            points: 140,
+          },
+          brute: {
+            hp: 260,
+            speed: 1.3,
+            damage: 22,
+            color: "#8a5950",
+            scale: 1.48,
+            points: 300,
+          },
+        };
+        function actor(color) {
+          const g = new T.Group(),
+            bodyMat = new T.MeshStandardMaterial({ color, roughness: 1 });
+          const torso = box(0, 1.17, 0, 0.57, 0.73, 0.34, bodyMat, false, g),
+            head = box(0, 1.81, 0, 0.34, 0.39, 0.34, "#a6ab88", false, g);
+          box(0, 1.05, -0.185, 0.4, 0.22, 0.06, bodyMat, false, g);
+          const limbs = [];
+          for (const side of [-1, 1]) {
+            const leg = new T.Group();
+            leg.position.set(side * 0.17, 0.84, 0);
+            g.add(leg);
+            box(0, -0.4, 0, 0.21, 0.8, 0.24, "#415346", false, leg);
+            limbs.push(leg);
+            const arm = new T.Group();
+            arm.position.set(side * 0.39, 1.46, 0);
+            g.add(arm);
+            box(0, -0.3, -0.09, 0.17, 0.67, 0.2, bodyMat, false, arm);
+            limbs.push(arm);
+          }
+          for (const x of [-0.09, 0.09])
+            box(
+              x,
+              1.85,
+              -0.177,
+              0.045,
+              0.035,
+              0.012,
+              mat("#edd3a1", true),
+              false,
+              g,
+            );
+          return { g, bodyMat, head, torso, limbs };
+        }
+        const ally = Object.assign(actor("#497f7b"), {
+          x: 3,
+          z: 35,
+          y: 0,
+          hp: 100,
+          cool: 0,
+          heal: 0,
+          down: 0,
+          kills: 0,
+        });
+        scene.add(ally.g);
+        ally.g.position.set(3, 0, 35);
+        box(0, 1.35, 0.27, 0.5, 0.6, 0.25, "#53645b", false, ally.g);
+        const allyLabel = sign(
+          "林 / AI",
+          0,
+          2.6,
+          0,
+          1.4,
+          0.37,
+          "#b9ddc4",
+          "#355c55",
+        );
+        world.remove(allyLabel);
+        ally.g.add(allyLabel);
+        const sparkMat = new T.MeshBasicMaterial({ color: "#f0bd7d" }),
+          bloodMat = new T.MeshBasicMaterial({ color: "#925d44" });
+        const particleMesh = new T.InstancedMesh(sphereGeo, sparkMat, 96);
+        particleMesh.instanceMatrix.setUsage(T.DynamicDrawUsage);
+        particleMesh.count = 0;
+        scene.add(particleMesh);
+        particleMesh.frustumCulled = false;
+        const dummy = new T.Object3D();
+        function burst(pos, n = 7, blood = false) {
+          for (let i = 0; i < n && effects.length < 96; i++)
+            effects.push({
+              p: pos.clone(),
+              v: v3(rand(-2, 2), rand(0.5, 3), rand(-2, 2)),
+              life: rand(0.14, 0.45),
+              color: new T.Color(blood ? "#ac7353" : "#f0c891"),
+            });
+        }
+        const ray = new T.Raycaster(),
+          aimRay = new T.Raycaster(),
+          keys = new Set();
+        const state = {
+          mode: "menu",
+          help: false,
+          time: 0,
+          wave: 0,
+          completed: 0,
+          pending: 0,
+          spawnClock: 0,
+          between: -1,
+          gate: false,
+          gateY: 0,
+          score: 0,
+          kills: 0,
+          toast: 0,
+          radio: 0,
+          hit: 0,
+          hurt: 0,
+          flash: 0,
+          training: 0,
+          navTimer: 0,
+        };
+        const player = {
+          x: 0,
+          z: 36,
+          y: 0,
+          vy: 0,
+          yaw: 0,
+          pitch: 0,
+          hp: 100,
+          ammo: 30,
+          reserve: 180,
+          stamina: 100,
+          reload: 0,
+          fire: 0,
+          recoil: 0,
+          grounded: true,
+          moving: false,
+          sprinting: false,
+        };
+        let mouseDown = false,
+          aiming = false,
+          locked = false,
+          nearby = null,
+          audioCtx = null,
+          noiseBuffer = null,
+          lastTime = 0,
+          uiClock = 0,
+          stepClock = 0;
+        function toast(title, sub = "", duration = 3) {
+          ui.toast.children[0].textContent = title;
+          ui.toast.children[1].textContent = sub;
+          state.toast = duration;
+          ui.toast.style.opacity = 1;
+        }
+        function radio(text, duration = 4) {
+          ui.radio.textContent = "林：" + text;
+          state.radio = duration;
+          ui.radio.hidden = false;
+        }
+        function sound(kind) {
+          if (!$("sound").checked) return;
+          try {
+            if (!audioCtx) {
+              audioCtx = new (window.AudioContext ||
+                window.webkitAudioContext)();
+              noiseBuffer = audioCtx.createBuffer(
+                1,
+                audioCtx.sampleRate * 0.2,
+                audioCtx.sampleRate,
+              );
+              const data = noiseBuffer.getChannelData(0);
+              for (let i = 0; i < data.length; i++)
+                data[i] = Math.random() * 2 - 1;
+            }
+            if (audioCtx.state === "suspended") audioCtx.resume();
+            const t = audioCtx.currentTime,
+              g = audioCtx.createGain();
+            g.connect(audioCtx.destination);
+            if (kind === "shot" || kind === "step") {
+              const s = audioCtx.createBufferSource(),
+                f = audioCtx.createBiquadFilter();
+              s.buffer = noiseBuffer;
+              f.type = "lowpass";
+              f.frequency.value = kind === "shot" ? 2300 : 280;
+              s.connect(f);
+              f.connect(g);
+              g.gain.setValueAtTime(kind === "shot" ? 0.12 : 0.035, t);
+              g.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
+              s.start(t);
+              s.stop(t + 0.13);
+              s.onended = () => {
+                s.disconnect();
+                f.disconnect();
+                g.disconnect();
+              };
+            } else {
+              const o = audioCtx.createOscillator();
+              o.type = kind === "hurt" ? "sawtooth" : "triangle";
+              const freq =
+                {
+                  hit: 480,
+                  kill: 200,
+                  reload: 760,
+                  pickup: 680,
+                  hurt: 70,
+                  dry: 130,
+                  wave: 180,
+                }[kind] || 300;
+              o.frequency.setValueAtTime(freq, t);
+              o.frequency.exponentialRampToValueAtTime(freq * 0.45, t + 0.13);
+              g.gain.setValueAtTime(0.065, t);
+              g.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
+              o.connect(g);
+              o.start(t);
+              o.stop(t + 0.21);
+              o.onended = () => {
+                o.disconnect();
+                g.disconnect();
+              };
+            }
+          } catch (e) {
+            /* Audio is optional; simulation remains playable. */
+          }
+        }
+        // Height-aware circle collision and a flow field route actors around buildings.
+        function floorAt(x, z) {
+          if (x >= 14 && x <= 26 && z >= -26 && z <= -12) return 2.7;
+          if (x >= 17 && x <= 23 && z > -12 && z <= -3) return (-3 - z) * 0.3;
+          return 0;
+        }
+        function supportAt(x, z, feet) {
+          let ground = floorAt(x, z);
+          for (const c of colliders)
+            if (
+              c.active &&
+              c.h <= feet + 0.08 &&
+              c.h > ground &&
+              overlap(x, z, 0.2, c)
+            )
+              ground = c.h;
+          return ground;
+        }
+        function overlap(x, z, r, c) {
+          const dx = x - clamp(x, c.x - c.w / 2, c.x + c.w / 2),
+            dz = z - clamp(z, c.z - c.d / 2, c.z + c.d / 2);
+          return dx * dx + dz * dz < r * r;
+        }
+        function blocked(x, z, y, r = 0.36, enemy = false) {
+          if (x < -36.4 + r || x > 36.4 - r || z < -55.4 + r || z > 41.4 - r)
+            return true;
+          for (const c of colliders) {
+            if (!c.active || y >= c.h - 0.06 || y + 1.65 < c.b) continue;
+            if (enemy && c.h <= 1.2) continue;
+            if (overlap(x, z, r, c)) return true;
+          }
+          return false;
+        }
+        function canMove(a, x, z, enemy = false) {
+          const ground = floorAt(x, z),
+            r = enemy ? 0.4 : 0.36;
+          if (ground > a.y + 0.36) return false;
+          return !blocked(x, z, Math.max(a.y, ground), r, enemy);
+        }
+        function move(a, dx, dz, enemy = false) {
+          const steps = Math.max(
+            1,
+            Math.ceil(Math.max(Math.abs(dx), Math.abs(dz)) / 0.18),
+          );
+          for (let i = 0; i < steps; i++) {
+            if (canMove(a, a.x + dx / steps, a.z, enemy)) a.x += dx / steps;
+            if (canMove(a, a.x, a.z + dz / steps, enemy)) a.z += dz / steps;
+            const ground = floorAt(a.x, a.z);
+            if (enemy) a.y = ground;
+            else if (a.grounded && Math.abs(a.y - ground) < 0.38) a.y = ground;
+          }
+        }
+        const NAV = 1.5,
+          NX = 49,
+          NZ = 65,
+          navWalk = new Uint8Array(NX * NZ),
+          field = new Int32Array(NX * NZ),
+          queue = new Int32Array(NX * NZ),
+          neighbors = [
+            [-1, 0],
+            [1, 0],
+            [0, -1],
+            [0, 1],
+            [-1, -1],
+            [1, -1],
+            [-1, 1],
+            [1, 1],
+          ];
+        const cell = (x, z) =>
+            clamp(Math.round((z + 55) / NAV), 0, NZ - 1) * NX +
+            clamp(Math.round((x + 36) / NAV), 0, NX - 1),
+          point = (i) => ({
+            x: (i % NX) * NAV - 36,
+            z: Math.floor(i / NX) * NAV - 55,
+          });
+        function buildNav() {
+          for (let i = 0; i < navWalk.length; i++) {
+            const p = point(i);
+            navWalk[i] = !blocked(p.x, p.z, floorAt(p.x, p.z), 0.55, true);
+          }
+          state.navTimer = 0;
+        }
+        function buildField() {
+          field.fill(-1);
+          let root = cell(player.x, player.z);
+          if (!navWalk[root]) {
+            let best = Infinity;
+            for (let i = 0; i < navWalk.length; i++) {
+              if (!navWalk[i]) continue;
+              const p = point(i),
+                d = (p.x - player.x) ** 2 + (p.z - player.z) ** 2;
+              if (d < best) {
+                root = i;
+                best = d;
+              }
+            }
+          }
+          let head = 0,
+            tail = 0;
+          queue[tail++] = root;
+          field[root] = 0;
+          while (head < tail) {
+            const i = queue[head++],
+              cx = i % NX,
+              cz = Math.floor(i / NX),
+              p = point(i),
+              h = floorAt(p.x, p.z);
+            for (const [dx, dz] of neighbors) {
+              const x = cx + dx,
+                z = cz + dz;
+              if (x < 0 || x >= NX || z < 0 || z >= NZ) continue;
+              const ni = z * NX + x;
+              if (!navWalk[ni] || field[ni] >= 0) continue;
+              if (dx && dz && (!navWalk[cz * NX + x] || !navWalk[z * NX + cx]))
+                continue;
+              const np = point(ni);
+              if (Math.abs(floorAt(np.x, np.z) - h) > 0.51) continue;
+              field[ni] = field[i] + 1;
+              queue[tail++] = ni;
+            }
+          }
+        }
+        function directionToPlayer(a) {
+          let index = cell(a.x, a.z),
+            best = field[index],
+            next = index;
+          const ix = index % NX,
+            iz = Math.floor(index / NX);
+          for (const [dx, dz] of neighbors) {
+            const x = ix + dx,
+              z = iz + dz;
+            if (x < 0 || x >= NX || z < 0 || z >= NZ) continue;
+            const n = z * NX + x;
+            if (field[n] >= 0 && (best < 0 || field[n] < best)) {
+              if (dx && dz && (!navWalk[iz * NX + x] || !navWalk[z * NX + ix]))
+                continue;
+              const p = point(n);
+              if (Math.abs(floorAt(p.x, p.z) - floorAt(a.x, a.z)) > 0.55)
+                continue;
+              best = field[n];
+              next = n;
+            }
+          }
+          const p = best <= 1 ? player : point(next),
+            dx = p.x - a.x,
+            dz = p.z - a.z,
+            len = Math.hypot(dx, dz) || 1;
+          return { x: dx / len, z: dz / len };
+        }
+        function obstruction(origin, direction, max) {
+          ray.set(origin, direction);
+          ray.near = 0.03;
+          ray.far = max;
+          const hits = ray.intersectObjects(occluders, false);
+          for (const hit of hits) {
+            if (hit.object === gate && !gateCollider.active) continue;
+            const b = hit.object.userData.barrier;
+            if (b && b.hp <= 0) continue;
+            return hit;
+          }
+          return null;
+        }
+        function visible(a, b) {
+          const delta = b.clone().sub(a),
+            distance = delta.length();
+          return !obstruction(a, delta.normalize(), distance - 0.08);
+        }
+        const spawns = [
+          [-30, -47],
+          [30, -46],
+          [-27, -26],
+          [30, -14],
+          [-30, 24],
+          [29, 26],
+          [0, -48],
+          [7, -37],
+        ];
+        function chooseSpawn() {
+          let best = null,
+            score = -Infinity;
+          for (const [x, z] of spawns) {
+            const d = Math.hypot(x - player.x, z - player.z);
+            if (d < (state.wave === 1 ? 29 : 16)) continue;
+            const dx = (x - player.x) / d,
+              dz = (z - player.z) / d,
+              dot = dx * -Math.sin(player.yaw) + dz * -Math.cos(player.yaw);
+            const seen = visible(
+              v3(player.x, player.y + 1.65, player.z),
+              v3(x, 1.3, z),
+            );
+            if (seen && dot > 0.52) continue;
+            const s = (seen ? 0 : 45) + d * 0.35 + Math.random() * 18;
+            if (s > score) {
+              score = s;
+              best = { x, z };
+            }
+          }
+          return best;
+        }
+        function spawnEnemy(type, where) {
+          const cfg = types[type];
+          let e = enemyPool.pop();
+          if (!e) {
+            e = actor(cfg.color);
+            e.g.traverse((m) => {
+              if (m.isMesh) m.userData.enemy = e;
+            });
+            scene.add(e.g);
+          }
+          Object.assign(e, {
+            type,
+            x: where.x,
+            z: where.z,
+            y: floorAt(where.x, where.z),
+            hp: cfg.hp * (1 + 0.11 * Math.max(0, state.wave - 1)),
+            speed:
+              cfg.speed *
+              (state.wave === 1
+                ? 0.69
+                : 1 + Math.min(0.65, (state.wave - 1) * 0.045)),
+            damage: cfg.damage,
+            attack: 1,
+            flash: 0,
+            age: 0,
+            vault: 0,
+          });
+          e.bodyMat.color.set(cfg.color);
+          e.bodyMat.emissive.setHex(0);
+          e.g.scale.setScalar(cfg.scale);
+          e.g.position.set(e.x, e.y, e.z);
+          e.g.rotation.set(0, 0, 0);
+          e.g.visible = true;
+          e.g.updateMatrixWorld(true);
+          enemies.push(e);
+          return e;
+        }
+        function hurtEnemy(e, damage, point, byAlly = false) {
+          if (e.hp <= 0) return;
+          e.hp -= damage;
+          e.flash = 0.12;
+          e.bodyMat.emissive.set("#b19669");
+          const dx = e.x - player.x,
+            dz = e.z - player.z,
+            len = Math.hypot(dx, dz) || 1;
+          move(e, (dx / len) * 0.1, (dz / len) * 0.1, true);
+          burst(point, byAlly ? 2 : 6, true);
+          if (!byAlly) {
+            state.hit = 0.13;
+            sound("hit");
+          }
+          if (e.hp <= 0) {
+            e.g.visible = false;
+            enemies.splice(enemies.indexOf(e), 1);
+            enemyPool.push(e);
+            if (byAlly) {
+              ally.kills++;
+              state.score += Math.round(types[e.type].points * 0.35);
+            } else {
+              state.kills++;
+              state.score += types[e.type].points;
+              sound("kill");
+              state.hit = 0.23;
+            }
+            if (!byAlly && Math.random() < 0.12) {
+              player.reserve = Math.min(240, player.reserve + 8);
+            }
+          }
+        }
+        function damageBarrier(b, amount) {
+          if (b.hp <= 0) return;
+          b.hp -= amount;
+          if (b.hp <= 0) {
+            b.group.visible = false;
+            b.c.active = false;
+            burst(v3(b.c.x, 0.65, b.c.z), 12);
+            radio("路障被突破了，换个位置！", 2.5);
+          }
+        }
+        function shoot() {
+          if (player.reload > 0 || player.fire > 0) return;
+          if (player.ammo <= 0) {
+            player.fire = 0.3;
+            sound("dry");
+            if (player.reserve > 0) reload();
+            else toast("弹药耗尽", "前往弹药箱，按 E 补充", 1.5);
+            return;
+          }
+          player.ammo--;
+          player.fire = 0.105;
+          player.recoil = Math.min(0.07, player.recoil + 0.023);
+          state.flash = 0.045;
+          sound("shot");
+          camera.updateMatrixWorld(true);
+          aimRay.setFromCamera({ x: 0, y: 0 }, camera);
+          aimRay.far = 90;
+          const origin = aimRay.ray.origin,
+            dir = aimRay.ray.direction;
+          const wallHit = obstruction(origin, dir, 90);
+          const hitObjects = targets.concat(
+            enemies.flatMap((e) => e.g.children),
+          );
+          const hits = aimRay.intersectObjects(hitObjects, true);
+          let hit = hits.find(
+            (h) => !h.object.userData.enemy || h.object.userData.enemy.hp > 0,
+          );
+          if (hit && (!wallHit || hit.distance < wallHit.distance)) {
+            const target =
+              hit.object.userData.targetParent ||
+              (hit.object.userData.target ? hit.object : null);
+            if (target) {
+              target.material.color.set("#acd693");
+              target.userData.reset = 0.7;
+              state.training++;
+              state.hit = 0.16;
+              sound("hit");
+              if (state.training === 1)
+                toast("命中标靶", "按 R 练习换弹；准备好后走向出口", 3);
+              burst(hit.point, 4);
+            } else {
+              const e = hit.object.userData.enemy;
+              if (e) hurtEnemy(e, hit.object === e.head ? 70 : 34, hit.point);
+            }
+          } else if (wallHit) {
+            burst(wallHit.point, 5);
+            if (wallHit.object.userData.barrier)
+              damageBarrier(wallHit.object.userData.barrier, 22);
+          }
+          if (player.ammo === 0 && player.reserve > 0) setReloadHint();
+        }
+        function setReloadHint() {
+          ui["ammo-hint"].textContent = "弹匣已空 · 按 R 换弹";
+        }
+        function reload() {
+          if (player.reload > 0 || player.ammo === 30 || player.reserve <= 0)
+            return;
+          player.reload = 1.85;
+          sound("reload");
+        }
+        function damagePlayer(amount) {
+          if (state.mode !== "playing" || player.hp <= 0) return;
+          player.hp = Math.max(0, player.hp - amount);
+          state.hurt = 0.65;
+          sound("hurt");
+          if (player.hp <= 0) endGame();
+        }
+        function interact() {
+          if (!nearby) return;
+          if (nearby === ally) {
+            ally.hp = 65;
+            ally.down = 0;
+            radio("我还能继续。谢谢你！");
+            return;
+          }
+          const s = nearby;
+          if (state.time < s.ready) return;
+          if (s.type === "ammo") {
+            if (player.reserve >= 240 && player.ammo === 30) {
+              toast("弹药已充足", "", 1.2);
+              return;
+            }
+            player.reserve = 240;
+            player.ammo = 30;
+            player.reload = 0;
+            s.ready = state.time + 18;
+            toast("弹药补充完成", "弹匣装满 · 备用弹药 240", 2);
+          } else {
+            if (player.hp >= 100) {
+              toast("生命值已满", "把医疗留到需要的时候", 1.5);
+              return;
+            }
+            player.hp = Math.min(100, player.hp + 60);
+            s.ready = state.time + 35;
+            toast("已使用医疗补给", "恢复 60 生命值", 2);
+          }
+          sound("pickup");
+        }
+        function openGate() {
+          state.gate = true;
+          gateCollider.active = false;
+          state.between = 3;
+          ui.objective.textContent = "西侧诊所补充医疗，东侧平台补充弹药。";
+          buildNav();
+          toast("准备迎接第一波", "3 秒后，远处的感染者开始靠近。", 3);
+          radio("我跟着你。别守死一个位置。");
+        }
+        function startWave() {
+          state.wave++;
+          state.pending =
+            state.wave === 1 ? 4 : Math.min(52, 6 + state.wave * 3);
+          state.spawnClock = 0;
+          state.between = -1;
+          toast(
+            "第 " + String(state.wave).padStart(2, "0") + " 波",
+            state.wave === 1
+              ? "少量感染者 · 保持距离，瞄准头部"
+              : "听脚步，留意侧后方。",
+            3,
+          );
+          sound("wave");
+        }
+        function updateWave(dt) {
+          if (!state.gate) return;
+          if (state.between >= 0) {
+            state.between -= dt;
+            if (state.between <= 0) startWave();
+            return;
+          }
+          state.spawnClock -= dt;
+          if (
+            state.pending > 0 &&
+            state.spawnClock <= 0 &&
+            enemies.length < 28
+          ) {
+            const where = chooseSpawn();
+            if (where) {
+              const roll = Math.random(),
+                type =
+                  state.wave >= 3 && roll < 0.18
+                    ? "brute"
+                    : state.wave >= 2 && roll < 0.44
+                      ? "runner"
+                      : "walker";
+              spawnEnemy(type, where);
+              state.pending--;
+              state.spawnClock =
+                state.wave === 1
+                  ? 1.6
+                  : Math.max(0.36, 1.2 - state.wave * 0.05);
+            } else state.spawnClock = 0.5;
+          }
+          if (state.pending === 0 && enemies.length === 0) {
+            state.completed = state.wave;
+            state.between = 12;
+            state.score += state.wave * 250;
+            player.stamina = 100;
+            if (ally.hp <= 0) {
+              ally.hp = 60;
+              ally.down = 0;
+            }
+            toast("街区暂时安全", "12 秒整备时间 · 寻找补给，照应搭档", 4);
+            radio("这波结束了。抓紧补给，下一波快到了。");
+          }
+        }
+        function updateEnemies(dt) {
+          for (const e of [...enemies]) {
+            e.age += dt;
+            e.attack -= dt;
+            e.flash -= dt;
+            if (e.flash <= 0) e.bodyMat.emissive.setHex(0);
+            const dp = Math.hypot(e.x - player.x, e.z - player.z),
+              da =
+                ally.hp > 0 ? Math.hypot(e.x - ally.x, e.z - ally.z) : Infinity;
+            let target = player,
+              dist = dp;
+            if (da < dp * 0.75 && da < 3) {
+              target = ally;
+              dist = da;
+            }
+            const dy = Math.abs(e.y - target.y),
+              reach = e.type === "brute" ? 1.75 : 1.15;
+            if (
+              dist < reach &&
+              dy < 1.5 &&
+              visible(
+                v3(e.x, e.y + 1.2, e.z),
+                v3(target.x, target.y + 1.2, target.z),
+              )
+            ) {
+              if (e.attack <= 0) {
+                e.attack = e.type === "brute" ? 1.45 : 1.1;
+                if (target === player) damagePlayer(e.damage);
+                else {
+                  ally.hp = Math.max(0, ally.hp - e.damage);
+                  if (ally.hp <= 0) {
+                    ally.down = 20;
+                    radio("我倒下了！靠近我，按 E 拉我一把。", 5);
+                  }
+                }
+              }
+              e.g.rotation.y =
+                Math.atan2(target.x - e.x, target.z - e.z) + Math.PI;
+            } else {
+              let dir = directionToPlayer(e);
+              if (target === ally) {
+                const d = da || 1;
+                dir = { x: (ally.x - e.x) / d, z: (ally.z - e.z) / d };
+              }
+              let sx = 0,
+                sz = 0;
+              for (const other of enemies) {
+                if (other === e) continue;
+                const dx = e.x - other.x,
+                  dz = e.z - other.z,
+                  d = Math.hypot(dx, dz);
+                if (d > 0 && d < 0.85) {
+                  sx += (dx / d) * (0.85 - d) * 1.2;
+                  sz += (dz / d) * (0.85 - d) * 1.2;
+                }
+              }
+              move(
+                e,
+                (dir.x * e.speed + sx) * dt,
+                (dir.z * e.speed + sz) * dt,
+                true,
+              );
+              e.g.rotation.y = Math.atan2(dir.x, dir.z) + Math.PI;
+              for (const b of barriers) {
+                if (b.hp > 0 && overlap(e.x, e.z, 0.6, b.c)) {
+                  e.vault = 0.45;
+                  if (e.attack <= 0) {
+                    damageBarrier(b, e.type === "brute" ? 65 : 14);
+                    e.attack = 0.9;
+                  }
+                }
+              }
+            }
+            e.vault = Math.max(0, e.vault - dt);
+            e.g.position.set(
+              e.x,
+              e.y +
+                (e.vault > 0 ? Math.sin((e.vault / 0.45) * Math.PI) * 0.8 : 0),
+              e.z,
+            );
+            e.g.rotation.z = Math.sin(e.age * 7) * 0.025;
+            e.limbs[0].rotation.x = Math.sin(e.age * e.speed * 4) * 0.48;
+            e.limbs[2].rotation.x = -e.limbs[0].rotation.x;
+            e.limbs[1].rotation.x = -0.8 + Math.sin(e.age * 4) * 0.18;
+            e.limbs[3].rotation.x = -0.8 - Math.sin(e.age * 4) * 0.18;
+          }
+        }
+        function updateAlly(dt) {
+          ally.cool -= dt;
+          ally.heal = Math.max(0, ally.heal - dt);
+          if (ally.hp <= 0) {
+            ally.g.rotation.z = -Math.PI / 2;
+            ally.g.position.y = 0.35;
+            return;
+          }
+          ally.g.rotation.z = 0;
+          const d = Math.hypot(player.x - ally.x, player.z - ally.z);
+          if (d > 3.8) {
+            const dir = directionToPlayer(ally);
+            move(ally, dir.x * 3.9 * dt, dir.z * 3.9 * dt, true);
+            ally.g.rotation.y = Math.atan2(dir.x, dir.z) + Math.PI;
+            ally.limbs[0].rotation.x = Math.sin(state.time * 9) * 0.45;
+            ally.limbs[2].rotation.x = -ally.limbs[0].rotation.x;
+          } else ally.limbs[0].rotation.x = ally.limbs[2].rotation.x = 0;
+          ally.g.position.set(ally.x, ally.y, ally.z);
+          allyLabel.rotation.y = player.yaw - ally.g.rotation.y;
+          if (ally.cool <= 0) {
+            const enemy = enemies
+              .filter((e) => Math.hypot(e.x - ally.x, e.z - ally.z) < 19)
+              .sort(
+                (a, b) =>
+                  Math.hypot(a.x - ally.x, a.z - ally.z) -
+                  Math.hypot(b.x - ally.x, b.z - ally.z),
+              )
+              .find((e) =>
+                visible(
+                  v3(ally.x, ally.y + 1.5, ally.z),
+                  v3(e.x, e.y + 1.2, e.z),
+                ),
+              );
+            if (enemy) {
+              ally.cool = state.wave === 1 ? 1.5 : 0.75;
+              ally.g.rotation.y =
+                Math.atan2(enemy.x - ally.x, enemy.z - ally.z) + Math.PI;
+              hurtEnemy(enemy, 22, v3(enemy.x, enemy.y + 1.3, enemy.z), true);
+              burst(v3(ally.x, ally.y + 1.4, ally.z), 2);
+            } else ally.cool = 0.25;
+          }
+          if (player.hp < 45 && ally.heal <= 0 && d < 3.8) {
+            player.hp = Math.min(100, player.hp + 22);
+            ally.heal = 45;
+            radio("我给你包扎一下。继续移动！");
+            sound("pickup");
+          }
+        }
+        function updatePlayer(dt) {
+          player.fire = Math.max(0, player.fire - dt);
+          player.recoil = Math.max(0, player.recoil - dt * 0.15);
+          if (player.reload > 0) {
+            player.reload -= dt;
+            if (player.reload <= 0) {
+              const n = Math.min(30 - player.ammo, player.reserve);
+              player.ammo += n;
+              player.reserve -= n;
+              sound("reload");
+            }
+          }
+          let x = (keys.has("KeyD") ? 1 : 0) - (keys.has("KeyA") ? 1 : 0),
+            z = (keys.has("KeyS") ? 1 : 0) - (keys.has("KeyW") ? 1 : 0),
+            len = Math.hypot(x, z);
+          player.moving = len > 0;
+          player.sprinting =
+            len > 0 &&
+            (keys.has("ShiftLeft") || keys.has("ShiftRight")) &&
+            player.stamina > 2 &&
+            !aiming;
+          const speed = player.sprinting ? 7.2 : aiming ? 2.65 : 4.5;
+          if (len) {
+            x /= len;
+            z /= len;
+            const c = Math.cos(player.yaw),
+              s = Math.sin(player.yaw);
+            move(
+              player,
+              (x * c + z * s) * speed * dt,
+              (-x * s + z * c) * speed * dt,
+            );
+            if (player.grounded) {
+              stepClock -= dt;
+              if (stepClock <= 0) {
+                sound("step");
+                stepClock = player.sprinting ? 0.28 : 0.44;
+              }
+            }
+          }
+          player.stamina = clamp(
+            player.stamina + (player.sprinting ? -24 : 17) * dt,
+            0,
+            100,
+          );
+          const ground = supportAt(player.x, player.z, player.y);
+          if (!player.grounded || player.y > ground + 0.05) {
+            player.grounded = false;
+            player.vy -= 18 * dt;
+            player.y += player.vy * dt;
+            if (player.y <= ground) {
+              player.y = ground;
+              player.vy = 0;
+              player.grounded = true;
+            }
+          } else player.y = ground;
+          if (!state.gate && player.z < 30.7 && Math.abs(player.x) < 3.1)
+            openGate();
+          if (mouseDown && !player.sprinting) shoot();
+        }
+        function updateEffects(dt) {
+          state.toast = Math.max(0, state.toast - dt);
+          state.radio = Math.max(0, state.radio - dt);
+          state.hit = Math.max(0, state.hit - dt);
+          state.hurt = Math.max(0, state.hurt - dt);
+          state.flash = Math.max(0, state.flash - dt);
+          for (let i = effects.length - 1; i >= 0; i--) {
+            const e = effects[i];
+            e.life -= dt;
+            if (e.life <= 0) {
+              effects.splice(i, 1);
+              continue;
+            }
+            e.v.y -= 9 * dt;
+            e.p.addScaledVector(e.v, dt);
+          }
+          particleMesh.count = effects.length;
+          effects.forEach((e, i) => {
+            dummy.position.copy(e.p);
+            dummy.scale.setScalar(Math.max(0.012, e.life * 0.12));
+            dummy.updateMatrix();
+            particleMesh.setMatrixAt(i, dummy.matrix);
+            particleMesh.setColorAt(i, e.color);
+          });
+          particleMesh.instanceMatrix.needsUpdate = true;
+          if (particleMesh.instanceColor)
+            particleMesh.instanceColor.needsUpdate = true;
+          for (const t of targets) {
+            if (t.userData.reset > 0) {
+              t.userData.reset -= dt;
+              if (t.userData.reset <= 0) t.material.color.set("#bfab78");
+            }
+          }
+        }
+        function findInteraction() {
+          nearby = null;
+          let best = 2.7;
+          for (const s of supplies) {
+            const d = Math.hypot(s.x - player.x, s.z - player.z);
+            if (d < best && Math.abs(s.y - player.y) < 1) {
+              best = d;
+              nearby = s;
+            }
+          }
+          if (
+            ally.hp <= 0 &&
+            Math.hypot(ally.x - player.x, ally.z - player.z) < 2.7 &&
+            Math.abs(ally.y - player.y) < 1
+          )
+            nearby = ally;
+          if (!nearby) {
+            ui.interact.hidden = true;
+            return;
+          }
+          ui.interact.hidden = false;
+          if (nearby === ally) ui.interact.innerHTML = "<kbd>E</kbd>扶起林";
+          else {
+            const left = Math.ceil(nearby.ready - state.time);
+            ui.interact.innerHTML =
+              left > 0
+                ? "补给整理中 · " + left + " 秒"
+                : "<kbd>E</kbd>" +
+                  (nearby.type === "ammo"
+                    ? "补充弹药"
+                    : "使用医疗包 · 恢复 60 生命");
+          }
+        }
+        const mapctx = $("minimap").getContext("2d");
+        function drawMap() {
+          const c = mapctx;
+          c.clearRect(0, 0, 174, 216);
+          c.save();
+          c.translate(8, 8);
+          c.scale(2.12, 2.03);
+          c.translate(37, 56);
+          c.fillStyle = "#9aac9240";
+          for (const b of colliders) {
+            if (!b.active) continue;
+            c.fillRect(b.x - b.w / 2, b.z - b.d / 2, b.w, b.d);
+          }
+          c.fillStyle = "#acb79355";
+          c.fillRect(14, -26, 12, 14);
+          c.fillRect(17, -12, 6, 9);
+          for (const s of supplies) {
+            c.fillStyle =
+              s.ready > state.time
+                ? "#617168"
+                : s.type === "med"
+                  ? "#a0ceb3"
+                  : "#eba267";
+            c.fillRect(s.x - 1, s.z - 1, 2, 2);
+          }
+          for (const e of enemies) {
+            if (Math.hypot(e.x - player.x, e.z - player.z) < 18) {
+              c.fillStyle = e.type === "brute" ? "#fa9d7d" : "#dc7966";
+              c.beginPath();
+              c.arc(e.x, e.z, e.type === "brute" ? 1.05 : 0.65, 0, Math.PI * 2);
+              c.fill();
+            }
+          }
+          c.fillStyle = "#9ccbcc";
+          c.beginPath();
+          c.arc(ally.x, ally.z, 0.9, 0, Math.PI * 2);
+          c.fill();
+          c.translate(player.x, player.z);
+          c.rotate(-player.yaw);
+          c.fillStyle = "#f1ecd2";
+          c.beginPath();
+          c.moveTo(0, -2);
+          c.lineTo(-1.25, 1.3);
+          c.lineTo(1.25, 1.3);
+          c.closePath();
+          c.fill();
+          c.restore();
+          c.font = "9px monospace";
+          c.fillStyle = "#aebfaf";
+          c.fillText("N ↑   04 / PUMP", 9, 209);
+        }
+        function updateUI() {
+          ui.health.textContent = Math.ceil(player.hp);
+          ui["health-bar"].style.width = player.hp + "%";
+          ui["health-bar"].style.background =
+            player.hp < 30 ? "var(--red)" : "var(--green)";
+          ui["stamina-bar"].style.width = player.stamina + "%";
+          ui.ammo.textContent = String(player.ammo).padStart(2, "0");
+          ui.ammo.style.color =
+            player.ammo < 6 ? "var(--orange)" : "var(--ink)";
+          ui.reserve.textContent = player.reserve;
+          ui.score.textContent = String(state.score).padStart(5, "0");
+          ui.kills.textContent = state.kills;
+          ui.wave.textContent = String(state.wave).padStart(2, "0");
+          ui["wave-sub"].textContent = !state.gate
+            ? "训练阶段 · 暂无感染者"
+            : state.between >= 0
+              ? "下一波 " + Math.max(0, Math.ceil(state.between)) + " 秒"
+              : "感染者 " + enemies.length + "　/　待出现 " + state.pending;
+          ui.reload.hidden = player.reload <= 0;
+          ui.reload.textContent =
+            "正在换弹 " + Math.max(0, player.reload).toFixed(1) + "s";
+          ui["ammo-hint"].textContent =
+            player.ammo === 0
+              ? "弹匣已空 · R 换弹"
+              : "R 换弹　·　E 补给　·　H 操作提示";
+          ui["ally-status"].textContent =
+            ally.hp <= 0
+              ? "倒地 · 靠近按 E 扶起"
+              : "生命 " +
+                Math.ceil(ally.hp) +
+                " · " +
+                (ally.heal > 0
+                  ? "包扎冷却 " + Math.ceil(ally.heal) + "s"
+                  : "可以紧急包扎");
+          ui.zone.textContent =
+            player.z > 26 && Math.abs(player.x) < 11
+              ? "出生安全屋"
+              : player.x < -18
+                ? "西线 / 社区诊所"
+                : player.y > 1.3
+                  ? "东线 / 维修平台"
+                  : player.z < -30 && Math.abs(player.x) < 13
+                    ? "泵站大厅"
+                    : player.x > 13
+                      ? "东线 / 维修区"
+                      : "中央街道";
+          ui.toast.style.opacity =
+            state.toast > 0 ? Math.min(1, state.toast * 2) : 0;
+          ui.radio.hidden = state.radio <= 0;
+          ui.hitmarker.style.opacity = state.hit > 0 ? 1 : 0;
+          ui.damage.style.opacity =
+            Math.min(0.7, state.hurt) +
+            (player.hp < 25 && state.mode === "playing" ? 0.12 : 0);
+          findInteraction();
+          drawMap();
+        }
+        function reset() {
+          for (const e of enemies) {
+            e.g.visible = false;
+            enemyPool.push(e);
+          }
+          enemies.length = 0;
+          effects.length = 0;
+          particleMesh.count = 0;
+          Object.assign(state, {
+            mode: "playing",
+            help: true,
+            time: 0,
+            wave: 0,
+            completed: 0,
+            pending: 0,
+            spawnClock: 0,
+            between: -1,
+            gate: false,
+            gateY: 0,
+            score: 0,
+            kills: 0,
+            toast: 0,
+            radio: 0,
+            hit: 0,
+            hurt: 0,
+            flash: 0,
+            training: 0,
+            navTimer: 0,
+          });
+          Object.assign(player, {
+            x: 0,
+            z: 36,
+            y: 0,
+            vy: 0,
+            yaw: 0,
+            pitch: 0,
+            hp: 100,
+            ammo: 30,
+            reserve: 180,
+            stamina: 100,
+            reload: 0,
+            fire: 0,
+            recoil: 0,
+            grounded: true,
+            moving: false,
+            sprinting: false,
+          });
+          Object.assign(ally, {
+            x: 3,
+            z: 35,
+            y: 0,
+            hp: 100,
+            cool: 0,
+            heal: 0,
+            down: 0,
+            kills: 0,
+          });
+          ally.g.position.set(3, 0, 35);
+          ally.g.rotation.set(0, 0, 0);
+          gateGroup.position.y = 0;
+          gateCollider.active = true;
+          barriers.forEach((b) => {
+            b.hp = 110;
+            b.c.active = true;
+            b.group.visible = true;
+          });
+          supplies.forEach((s) => (s.ready = 0));
+          targets.forEach((t) => {
+            if (t.userData.target) {
+              t.material.color.set("#bfab78");
+              t.userData.reset = 0;
+            }
+          });
+          keys.clear();
+          mouseDown = false;
+          aiming = false;
+          flashlight.visible = false;
+          buildNav();
+          buildField();
+          ui.menu.hidden = true;
+          ui.gameover.hidden = true;
+          ui.pause.hidden = true;
+          ui.help.hidden = false;
+          ui.hud.style.display = "block";
+          ui.objective.textContent = "熟悉操作，射击左侧标靶，再走向出口。";
+          updateUI();
+          updateCamera(0);
+        }
+        function endGame() {
+          state.mode = "dead";
+          keys.clear();
+          mouseDown = false;
+          ui.help.hidden = true;
+          state.help = false;
+          ui.pause.hidden = true;
+          ui.gameover.hidden = false;
+          $("result-wave").textContent = state.completed;
+          $("result-kills").textContent = state.kills;
+          $("result-score").textContent = state.score;
+          $("result-time").textContent =
+            "生存时间 " +
+            Math.floor(state.time / 60) +
+            " 分 " +
+            Math.floor(state.time % 60) +
+            " 秒  /  搭档击杀 " +
+            ally.kills;
+          if (document.pointerLockElement) document.exitPointerLock();
+        }
+        async function lock() {
+          try {
+            const result = canvas.requestPointerLock();
+            if (result && result.catch) await result;
+          } catch (e) {
+            pause(
+              "鼠标锁定未成功，请再次点击继续；也可直接打开这个 HTML 文件游玩。",
+            );
+          }
+        }
+        function pause(text = "游戏已暂停。点击继续，重新锁定鼠标。") {
+          if (state.mode !== "playing") return;
+          state.mode = "paused";
+          keys.clear();
+          mouseDown = false;
+          aiming = false;
+          ui.pause.hidden = false;
+          $("pause-text").textContent = text;
+        }
+        ui.start.disabled = false;
+        ui.start.innerHTML = "<span>进入安全屋</span><span>→</span>";
+        ui.start.onclick = () => {
+          reset();
+          sound("pickup");
+          lock();
+        };
+        $("restart").onclick = () => {
+          reset();
+          sound("pickup");
+          lock();
+        };
+        $("resume").onclick = () => {
+          lock();
+        };
+        document.addEventListener("pointerlockchange", () => {
+          locked = document.pointerLockElement === canvas;
+          if (locked && state.mode === "paused") {
+            state.mode = "playing";
+            ui.pause.hidden = true;
+          } else if (!locked && state.mode === "playing") pause();
+        });
+        document.addEventListener("pointerlockerror", () =>
+          pause("浏览器未锁定鼠标。点击继续再试一次。"),
+        );
+        document.addEventListener("visibilitychange", () => {
+          if (document.hidden && state.mode === "playing") {
+            pause();
+            if (document.pointerLockElement) document.exitPointerLock();
+          }
+        });
+        window.addEventListener("blur", () => {
+          if (state.mode === "playing") {
+            pause();
+            if (document.pointerLockElement) document.exitPointerLock();
+          }
+        });
+        document.addEventListener("keydown", (e) => {
+          if (
+            ["Space", "Tab", "ArrowUp", "ArrowDown"].includes(e.code) &&
+            state.mode !== "menu"
+          )
+            e.preventDefault();
+          if (
+            e.code === "KeyH" &&
+            !e.repeat &&
+            (state.mode === "playing" || state.mode === "paused")
+          ) {
+            state.help = !state.help;
+            ui.help.hidden = !state.help;
+            keys.clear();
+            mouseDown = false;
+            return;
+          }
+          if (state.mode !== "playing" || state.help || !locked) return;
+          keys.add(e.code);
+          if (e.repeat) return;
+          if (e.code === "KeyR") reload();
+          if (e.code === "KeyE") interact();
+          if (e.code === "KeyF") flashlight.visible = !flashlight.visible;
+          if (e.code === "Space" && player.grounded) {
+            player.vy = 7;
+            player.grounded = false;
+          }
+        });
+        document.addEventListener("keyup", (e) => keys.delete(e.code));
+        document.addEventListener("mousemove", (e) => {
+          if (!locked || state.mode !== "playing" || state.help) return;
+          const sensitivity =
+            0.002 * Number($("sensitivity").value) * (aiming ? 0.62 : 1);
+          player.yaw -= e.movementX * sensitivity;
+          player.pitch = clamp(
+            player.pitch - e.movementY * sensitivity,
+            -1.45,
+            1.45,
+          );
+        });
+        document.addEventListener("mousedown", (e) => {
+          if (!locked || state.mode !== "playing" || state.help) return;
+          if (e.button === 0) mouseDown = true;
+          if (e.button === 2) aiming = true;
+        });
+        document.addEventListener("mouseup", (e) => {
+          if (e.button === 0) mouseDown = false;
+          if (e.button === 2) aiming = false;
+        });
+        canvas.addEventListener("contextmenu", (e) => e.preventDefault());
+        $("quality").onchange = () => {
+          const high = $("quality").value === "high";
+          renderer.setPixelRatio(Math.min(devicePixelRatio, high ? 1.5 : 1));
+          renderer.shadowMap.enabled = high;
+          sun.castShadow = high;
+          scene.traverse((o) => {
+            if (o.isMesh && o.material) o.material.needsUpdate = true;
+          });
+        };
+        window.addEventListener("resize", () => {
+          renderer.setSize(innerWidth, innerHeight);
+          camera.aspect = weaponCamera.aspect = innerWidth / innerHeight;
+          camera.updateProjectionMatrix();
+          weaponCamera.updateProjectionMatrix();
+        });
+        canvas.addEventListener("webglcontextlost", (e) => {
+          e.preventDefault();
+          pause();
+          $("fatal").hidden = false;
+          $("fatal-text").textContent =
+            "图形上下文丢失。请重新加载游戏，并尝试将画质设为“流畅”。";
+        });
+        function updateCamera(dt) {
+          const moving =
+              player.moving &&
+              player.grounded &&
+              !state.help &&
+              state.mode === "playing",
+            bob = moving
+              ? Math.sin(state.time * (player.sprinting ? 15 : 10)) * 0.035
+              : 0;
+          camera.position.set(player.x, player.y + 1.68 + bob, player.z);
+          camera.rotation.set(
+            player.pitch + player.recoil * 0.32,
+            player.yaw,
+            0,
+            "YXZ",
+          );
+          camera.fov = T.MathUtils.damp(
+            camera.fov,
+            aiming ? 56 : player.sprinting ? 82 : 76,
+            10,
+            dt,
+          );
+          camera.updateProjectionMatrix();
+          const reloadDip =
+            player.reload > 0
+              ? Math.sin((1 - player.reload / 1.85) * Math.PI)
+              : 0;
+          gun.position.set(
+            aiming ? -0.235 : Math.sin(state.time * 10) * (moving ? 0.009 : 0),
+            -reloadDip * 0.25 - (player.sprinting ? 0.12 : 0),
+            -0.18 + player.recoil * 1.3,
+          );
+          gun.rotation.set(
+            -reloadDip * 0.45,
+            0,
+            -reloadDip * 0.45 + (moving ? Math.cos(state.time * 5) * 0.015 : 0),
+          );
+          flash.visible = state.flash > 0;
+          flash.rotation.y = state.time * 57;
+          weaponCamera.fov = aiming ? 48 : 58;
+          weaponCamera.updateProjectionMatrix();
+        }
+        function simulate(dt) {
+          state.time += dt;
+          state.navTimer -= dt;
+          if (state.navTimer <= 0) {
+            buildField();
+            state.navTimer = 0.5;
+          }
+          updatePlayer(dt);
+          updateWave(dt);
+          updateEnemies(dt);
+          if (state.mode !== "playing") return;
+          updateAlly(dt);
+          updateEffects(dt);
+          if (state.gate) {
+            state.gateY = Math.min(4.2, state.gateY + dt * 3);
+            gateGroup.position.y = state.gateY;
+          }
+          for (const s of supplies) {
+            s.halo.material.emissiveIntensity =
+              s.ready > state.time
+                ? 0.1
+                : 0.45 + Math.sin(state.time * 3) * 0.2;
+          }
+          updateCamera(dt);
+        }
+        function frame(now) {
+          requestAnimationFrame(frame);
+          const dt = Math.min(0.035, (now - lastTime) / 1000 || 0.016);
+          lastTime = now;
+          if (state.mode === "menu") {
+            camera.position.set(8, 8.6, 23);
+            camera.lookAt(-3, 2, -24);
+            camera.rotation.y += Math.sin(now * 0.00008) * 0.035;
+          } else if (state.mode === "playing" && !state.help && locked)
+            simulate(dt);
+          uiClock += dt;
+          if (uiClock > 0.08 && state.mode !== "menu") {
+            updateUI();
+            uiClock = 0;
+          }
+          renderer.autoClear = true;
+          renderer.render(scene, camera);
+          if (state.mode !== "menu") {
+            renderer.autoClear = false;
+            renderer.clearDepth();
+            renderer.render(weaponScene, weaponCamera);
+            renderer.autoClear = true;
+          }
+        }
+        buildNav();
+        requestAnimationFrame(frame);
+        // Explicit opt-in test access; absent from ordinary play, including direct file opening.
+        if (new URLSearchParams(location.search).has("test"))
+          window.__game = {
+            state,
+            player,
+            ally,
+            enemies,
+            barriers,
+            supplies,
+            targets,
+            keys,
+            renderer,
+            camera,
+            reset,
+            simulate,
+            shoot,
+            reload,
+            interact,
+            openGate,
+            startWave,
+            spawnEnemy,
+            hurtEnemy,
+            damagePlayer,
+            floorAt,
+            blocked,
+            move,
+            buildNav,
+            buildField,
+            field,
+            cell,
+            point,
+            chooseSpawn,
+            updateUI,
+            updateCamera,
+            setLocked: (v) => (locked = v),
+            snapshot: () => ({
+              mode: state.mode,
+              wave: state.wave,
+              pending: state.pending,
+              enemies: enemies.length,
+              player: { ...player },
+              gate: state.gate,
+              score: state.score,
+              kills: state.kills,
+              drawCalls: renderer.info.render.calls,
+              geometries: renderer.info.memory.geometries,
+            }),
+          };
+      }
+    </script>
+  </body>
+</html>
