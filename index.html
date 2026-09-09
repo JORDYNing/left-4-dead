@@ -576,7 +576,7 @@
       }
       #help {
         position: fixed;
-        z-index: 12;
+        z-index: 30;
         left: 50%;
         top: 50%;
         transform: translate(-50%, -50%);
@@ -591,6 +591,20 @@
         margin: 0 0 5px;
         letter-spacing: 3px;
       }
+      #help > .eyebrow { padding-right: 28px; }
+      #help-close {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        width: 40px;
+        height: 40px;
+        padding: 0;
+        border: 0;
+        color: var(--muted);
+        font-size: 28px;
+        line-height: 1;
+      }
+      #help-close:hover { color: var(--ink); }
       #help p {
         font-size: 12px;
         color: var(--muted);
@@ -976,10 +990,11 @@
       <div id="radio" hidden></div>
     </div>
     <div id="damage"></div>
-    <section id="help" hidden>
+    <section id="help" role="dialog" aria-labelledby="help-title" hidden>
+      <button id="help-close" type="button" aria-label="关闭操作提示" title="关闭提示（H）">×</button>
       <div class="eyebrow">街道已经断电，出门后尸潮会迅速靠近</div>
-      <h2>欢迎来到安全屋</h2>
-      <p>按 H 收起提示，再按 F 打开手电。跟随林出门；左侧标靶可练枪。</p>
+      <h2 id="help-title">欢迎来到安全屋</h2>
+      <p>点击右上角 × 或按 H 收起提示，再按 F 打开手电。跟随林出门；左侧标靶可练枪。</p>
       <div class="controls">
         <div><kbd>WASD</kbd>移动</div>
         <div><kbd>鼠标</kbd>转动视角</div>
@@ -2769,6 +2784,7 @@
           radio("街道断电了。按 F 打开手电筒，准备好就跟我出门。",7);
           updateUI();
           updateCamera(0);
+          setHelp(true);
         }
         function endGame() {
           combat.suspend();
@@ -2811,27 +2827,45 @@
           ui.pause.hidden = false;
           $("pause-text").textContent = text;
         }
+        function setHelp(open) {
+          state.help = open;
+          ui.help.hidden = !open;
+          keys.clear();
+          mouseDown = false;
+          aiming = false;
+          combat.suspend();
+          if (open) {
+            if (document.pointerLockElement) document.exitPointerLock();
+            $("help-close").focus({preventScroll: true});
+          } else {
+            $("help-close").blur();
+            if (state.mode === "playing") lock();
+          }
+        }
+        $("help-close").onclick = () => setHelp(false);
         ui.start.disabled = false;
         ui.start.innerHTML = "<span>进入安全屋</span><span>→</span>";
         ui.start.onclick = () => {
           reset();
           sound("pickup");
-          lock();
         };
         $("restart").onclick = () => {
           reset();
           sound("pickup");
-          lock();
         };
         $("resume").onclick = () => {
           lock();
         };
         document.addEventListener("pointerlockchange", () => {
           locked = document.pointerLockElement === canvas;
+          if (locked && state.help) {
+            document.exitPointerLock();
+            return;
+          }
           if (locked && state.mode === "paused") {
             state.mode = "playing";
             ui.pause.hidden = true;
-          } else if (!locked && state.mode === "playing") pause();
+          } else if (!locked && state.mode === "playing" && !state.help) pause();
         });
         document.addEventListener("pointerlockerror", () =>
           pause("浏览器未锁定鼠标。点击继续再试一次。"),
@@ -2859,12 +2893,7 @@
             !e.repeat &&
             (state.mode === "playing" || state.mode === "paused")
           ) {
-            state.help = !state.help;
-            ui.help.hidden = !state.help;
-            keys.clear();
-            mouseDown = false;
-            aiming = false;
-            combat.suspend();
+            setHelp(!state.help);
             return;
           }
           if (state.mode !== "playing" || state.help || !locked) return;
