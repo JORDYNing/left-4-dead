@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="theme-color" content="#283335" />
-    <title>余光 AFTERLIGHT · 隔离区 04</title>
+    <title>余光</title>
     <style>
       :root {
         --ink: #e8e7de;
@@ -103,40 +103,6 @@
         display: flex;
         flex-direction: column;
       }
-      .masthead {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        border-bottom: 1px solid var(--line);
-        padding-bottom: 19px;
-        gap: 20px;
-      }
-      .brand {
-        font-weight: 750;
-        letter-spacing: 5px;
-      }
-      .brand i {
-        display: inline-block;
-        background: var(--orange);
-        width: 12px;
-        height: 12px;
-        margin-right: 13px;
-        transform: rotate(-15deg);
-      }
-      .status {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 11px;
-        letter-spacing: 2px;
-      }
-      .status:before {
-        content: "";
-        width: 5px;
-        height: 5px;
-        border-radius: 100%;
-        background: var(--green);
-      }
       .intro {
         flex: 1;
         display: flex;
@@ -147,78 +113,13 @@
       .intro-copy {
         max-width: 580px;
       }
-      .eyebrow {
-        color: var(--orange);
-        letter-spacing: 4px;
-        font-size: 11px;
-        margin-bottom: 22px;
-      }
+      #start { margin-top: 40px; }
       h1 {
         font-size: clamp(74px, 10vw, 154px);
         line-height: 0.95;
         margin: 0;
         letter-spacing: -8px;
         font-weight: 850;
-      }
-      h1 span {
-        display: block;
-        font:
-          clamp(25px, 3.3vw, 48px) / 1.5 Impact,
-          "Arial Narrow",
-          sans-serif;
-        letter-spacing: 12px;
-        margin-top: 13px;
-      }
-      .lede {
-        max-width: 330px;
-        color: #c4cfca;
-        font-size: 14px;
-        line-height: 1.9;
-        margin: 28px 0 32px;
-      }
-      .start-meta {
-        margin-top: 15px;
-        color: var(--muted);
-        font-size: 11px;
-      }
-      .dossier {
-        width: 266px;
-        align-self: center;
-        margin-top: 90px;
-        background: #253333d9;
-        border: 1px solid var(--line);
-        padding: 23px;
-        backdrop-filter: blur(8px);
-      }
-      .dossier-top {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-      .sector {
-        font:
-          64px/1 Impact,
-          sans-serif;
-        color: var(--orange);
-      }
-      .dossier h2 {
-        font-size: 18px;
-        letter-spacing: 3px;
-        margin: 14px 0 4px;
-      }
-      .route-line {
-        border-top: 1px solid var(--line);
-        padding-top: 12px;
-        margin-top: 12px;
-        display: flex;
-        justify-content: space-between;
-        font-size: 12px;
-      }
-      .map-sketch {
-        width: 100%;
-        height: 145px;
-        margin: 12px 0;
-        opacity: 0.9;
       }
       .footer {
         display: flex;
@@ -265,21 +166,8 @@
         left: 30px;
         right: 30px;
         display: flex;
-        justify-content: space-between;
+        justify-content: flex-end;
         align-items: flex-start;
-      }
-      .location {
-        border-left: 3px solid var(--orange);
-        padding-left: 12px;
-      }
-      .location strong {
-        display: block;
-        font-size: 16px;
-        letter-spacing: 3px;
-      }
-      .location small {
-        font-size: 10px;
-        letter-spacing: 2px;
       }
       .wave-box {
         min-width: 205px;
@@ -329,10 +217,6 @@
         color: var(--green);
         font-weight: 700;
       }
-      .partner strong {
-        font-size: 12px;
-        letter-spacing: 2px;
-      }
       .partner small {
         display: block;
         font-size: 10px;
@@ -381,11 +265,6 @@
         right: 30px;
         bottom: 26px;
         text-align: right;
-      }
-      .weapon-name {
-        font-size: 10px;
-        letter-spacing: 3px;
-        color: #c1cec8;
       }
       .ammo {
         font:
@@ -492,20 +371,12 @@
         left: 50%;
         transform: translateX(-50%);
         text-align: center;
+        font-size: 20px;
+        font-weight: 600;
+        letter-spacing: 2px;
         transition: opacity 0.2s;
         white-space: pre-line;
         opacity: 0;
-      }
-      #toast strong {
-        font-size: 28px;
-        letter-spacing: 5px;
-      }
-      #toast small {
-        display: block;
-        font-size: 12px;
-        letter-spacing: 1px;
-        color: #d0ddd6;
-        margin-top: 6px;
       }
       #interact {
         position: absolute;
@@ -533,7 +404,7 @@
       }
       #objective {
         position: absolute;
-        top: 104px;
+        top: 30px;
         left: 30px;
         font-size: 12px;
         color: #dce5dc;
@@ -552,18 +423,6 @@
         height: 180px;
         border: 1px solid var(--line);
         background: #1e2d2bba;
-      }
-      #radio {
-        position: absolute;
-        left: 50%;
-        transform: translateX(-50%);
-        bottom: 70px;
-        max-width: 390px;
-        text-align: center;
-        font-size: 12px;
-        color: #d7e6da;
-        background: #23332cb3;
-        padding: 6px 12px;
       }
       #reload {
         position: absolute;
@@ -588,10 +447,9 @@
       }
       #help h2 {
         font-size: 22px;
-        margin: 0 0 5px;
+        margin: 0 0 24px;
         letter-spacing: 3px;
       }
-      #help > .eyebrow { padding-right: 28px; }
       #help-close {
         position: absolute;
         top: 8px;
@@ -605,23 +463,11 @@
         line-height: 1;
       }
       #help-close:hover { color: var(--ink); }
-      #help p {
-        font-size: 12px;
-        color: var(--muted);
-        margin: 0 0 21px;
-      }
       .controls {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 13px 20px;
         font-size: 12px;
-      }
-      .help-foot {
-        margin-top: 24px;
-        border-top: 1px solid var(--line);
-        padding-top: 15px;
-        font-size: 12px;
-        color: var(--orange);
       }
       .modal-screen {
         background: #1c2b2fbc;
@@ -679,36 +525,9 @@
       .intro {
         min-height: 0;
       }
-      .dossier {
-        margin-top: 0;
-      }
-      @media (max-height: 760px) {
-        .dossier {
-          padding: 18px;
-        }
-        .map-sketch {
-          height: 105px;
-          margin: 8px 0;
-        }
-        .sector {
-          font-size: 52px;
-        }
-        .dossier h2 {
-          margin-top: 8px;
-        }
-        .lede {
-          margin: 20px 0 25px;
-        }
-        .eyebrow {
-          margin-bottom: 16px;
-        }
-      }
       @media (max-width: 800px) {
         .screen {
           padding: 22px 6vw;
-        }
-        .dossier {
-          display: none;
         }
         h1 {
           font-size: 100px;
@@ -716,16 +535,10 @@
         .intro {
           align-items: center;
         }
-        .lede {
-          margin: 20px 0;
-        }
         .footer {
           align-items: flex-start;
           gap: 12px;
           flex-direction: column;
-        }
-        .masthead .status {
-          display: none;
         }
         .hud-top {
           top: 18px;
@@ -742,7 +555,7 @@
         }
         #objective {
           left: 18px;
-          top: 85px;
+          top: 22px;
           max-width: 230px;
         }
         #minimap {
@@ -753,11 +566,6 @@
         }
         .bar {
           width: 155px;
-        }
-        #radio {
-          bottom: 155px;
-          max-width: 75vw;
-          width: max-content;
         }
       }
       @media (pointer: coarse) {
@@ -774,15 +582,6 @@
         }
         h1 {
           font-size: 76px;
-        }
-        .lede {
-          margin: 13px 0;
-        }
-        .eyebrow {
-          margin-bottom: 12px;
-        }
-        .dossier {
-          margin-top: 0;
         }
         .intro {
           padding: 18px 0;
@@ -802,109 +601,27 @@
           transition: none !important;
         }
       }
-      #flashlight-tip {position:absolute;bottom:25%;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:16px;padding:16px 24px;border:1px solid #c6b58e66;background:#101c23ec;color:#ecdfbb;box-shadow:0 8px 35px #0005;pointer-events:none;}
+      #flashlight-tip {position:absolute;bottom:32%;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:8px;padding:10px 16px;border:1px solid #c6b58e66;background:#101c23ec;color:#ecdfbb;box-shadow:0 8px 35px #0005;pointer-events:none;}
       #flashlight-tip[hidden],#waypoint[hidden] {display:none;}
-      #flashlight-tip kbd {font:700 24px monospace;border:1px solid #ccb888;padding:7px 12px;}
-      #flashlight-tip small {display:block;margin-top:5px;font-size:11px;color:#aaa999;}
-      #lamp-state {position:absolute;right:34px;bottom:158px;font:12px monospace;color:#d2c6a5;}
+      #flashlight-tip kbd {border:1px solid #ccb888;margin-right:0;}
       #waypoint {position:absolute;transform:translate(-50%,-50%);color:#c8e8df;text-shadow:0 2px 6px #000;background:#102224b5;border-bottom:1px solid #81b6b2;padding:6px 11px;font-size:12px;pointer-events:none;}
     </style>
   </head>
   <body>
     <canvas id="world" aria-label="余光，第一人称生存游戏"></canvas>
     <div id="menu" class="screen">
-      <header class="masthead">
-        <div class="brand"><i></i>余光 / AFTERLIGHT</div>
-        <div class="status">紧急广播仍在继续 · 频率 104.6</div>
-      </header>
       <main class="intro">
         <div class="intro-copy">
-          <div class="eyebrow">合作生存 / 隔离区 04</div>
-          <h1>余光<span>AFTERLIGHT</span></h1>
-          <p class="lede">
-            日落大道断电了，街角传来不属于活人的脚步。<br />打开手电，跟随林穿过废墟，抵达泵站。
-          </p>
+          <h1>余光</h1>
           <button id="start" class="primary" disabled>
-            <span>正在接通电台…</span><span>→</span>
+            <span>加载中…</span><span>→</span>
           </button>
-          <div class="start-meta">单人 + 持枪 AI 搭档 · 夜间尸潮 · 鼠标 / 键盘</div>
           <div id="load-error" role="alert"></div>
-          <div id="mobile-note">请使用带鼠标和键盘的电脑游玩。</div>
-          <a href="credits.html" target="_blank" rel="noopener" style="display:inline-block;margin-top:16px;color:#a4aca9;font-size:11px;letter-spacing:.06em">模型作者与开源许可 ↗</a>
+          <div id="mobile-note">需鼠标和键盘</div>
+          <a href="credits.html" target="_blank" rel="noopener" style="display:inline-block;margin-top:16px;color:#a4aca9;font-size:11px;letter-spacing:.06em">致谢 ↗</a>
         </div>
-        <aside class="dossier">
-          <div class="dossier-top">
-            <span class="mono">QUARANTINE<br />ZONE</span
-            ><span class="sector">04</span>
-          </div>
-          <h2>洛杉矶 · 死城之夜</h2>
-          <div class="muted" style="font-size: 11px">最后一处亮着灯的街区</div>
-          <svg
-            class="map-sketch"
-            viewBox="0 0 210 145"
-            fill="none"
-            aria-label="西侧诊所和东侧维修区两条路线通向泵站"
-          >
-            <path
-              d="M105 129V105M105 105H39V43H105M105 105H172V43H105M105 43V17"
-              stroke="#a0ceb3"
-              stroke-width="2"
-              stroke-dasharray="4 4"
-            />
-            <path
-              d="M80 10H130V32H80ZM80 116H130V140H80ZM20 60H58V87H20ZM151 60H190V87H151Z"
-              fill="#78998c33"
-              stroke="#a0ceb3"
-            />
-            <path d="M68 52H140V95H68Z" stroke="#7c928788" />
-            <text
-              x="105"
-              y="25"
-              text-anchor="middle"
-              fill="#e8e7de"
-              font-size="9"
-            >
-              泵站大厅
-            </text>
-            <text
-              x="105"
-              y="132"
-              text-anchor="middle"
-              fill="#eba267"
-              font-size="9"
-            >
-              安全屋
-            </text>
-            <text
-              x="39"
-              y="77"
-              text-anchor="middle"
-              fill="#e8e7de"
-              font-size="9"
-            >
-              诊所
-            </text>
-            <text
-              x="170"
-              y="77"
-              text-anchor="middle"
-              fill="#e8e7de"
-              font-size="9"
-            >
-              维修区
-            </text>
-            <circle cx="105" cy="105" r="4" fill="#eba267" />
-          </svg>
-          <div class="route-line">
-            <span>西线 · 诊所通道</span><span class="muted">医疗</span>
-          </div>
-          <div class="route-line">
-            <span>东线 · 维修平台</span><span class="muted">弹药</span>
-          </div>
-        </aside>
       </main>
       <footer class="footer">
-        <span>活下去。补充弹药。照应彼此。</span>
         <div class="settings">
           <label
             >画质
@@ -924,24 +641,19 @@
               value="1" /></label
           ><label><input id="sound" type="checkbox" checked /> 声音</label>
         </div>
-        <span class="mono">WASD / R / E / SHIFT</span>
       </footer>
     </div>
     <div id="hud">
       <div class="hud-top">
-        <div class="location">
-          <small>洛杉矶 / 日落大道 · 隔离区 04</small
-          ><strong id="zone">出生安全屋</strong>
-        </div>
         <div class="wave-box">
-          <span class="label">WAVE</span><b id="wave">00</b>
-          <div id="wave-sub" class="wave-sub">训练阶段 · 暂无感染者</div>
+          <span class="label">波次</span><b id="wave">00</b>
+          <div id="wave-sub" class="wave-sub"></div>
           <div class="top-stats">
-            得分 <span id="score">00000</span>　击杀 <span id="kills">0</span>
+            击杀 <span id="kills">0</span>
           </div>
         </div>
       </div>
-      <div id="objective">熟悉操作，射击左侧标靶，再走向出口。</div>
+      <div id="objective">跟随林</div>
       <canvas
         id="minimap"
         width="174"
@@ -953,18 +665,16 @@
       <div id="damage-numbers" aria-hidden="true"></div>
       <div id="hitmarker" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
       <div id="kill-confirm" aria-hidden="true"></div>
-      <div id="toast"><strong></strong><small></small></div>
+      <div id="toast"></div>
       <div id="interact" hidden></div>
-      <div id="reload" hidden>正在换弹</div>
-      <div id="flashlight-tip" hidden><kbd>F</kbd><span>打开手电筒<small>街道已断电 · 照亮前路，跟上林</small></span></div>
-      <div id="lamp-state">F 手电 · 关闭</div>
+      <div id="reload" hidden>换弹</div>
+      <div id="flashlight-tip" hidden><kbd>F</kbd>手电</div>
       <div id="waypoint" hidden></div>
       <div class="bottom-left">
         <div class="partner">
           <div class="avatar">林</div>
           <div>
-            <strong>林 · 领路与火力掩护</strong
-            ><small id="ally-status">掩护 / 随行</small>
+            <small id="ally-status">100</small>
           </div>
         </div>
         <div>
@@ -979,59 +689,47 @@
         </div>
       </div>
       <div class="bottom-right">
-        <div class="weapon-name">AR–04 / 自动步枪</div>
         <div class="ammo">
           <b id="ammo">30</b><em>/</em><span id="reserve">180</span>
         </div>
-        <div id="ammo-hint" class="action-hint">
-          R 换弹　·　E 补给　·　H 操作提示
-        </div>
+        <div id="ammo-hint" class="action-hint"></div>
       </div>
-      <div id="radio" hidden></div>
     </div>
     <div id="damage"></div>
     <section id="help" role="dialog" aria-labelledby="help-title" hidden>
       <button id="help-close" type="button" aria-label="关闭操作提示" title="关闭提示（H）">×</button>
-      <div class="eyebrow">街道已经断电，出门后尸潮会迅速靠近</div>
-      <h2 id="help-title">欢迎来到安全屋</h2>
-      <p>点击右上角 × 或按 H 收起提示，再按 F 打开手电。跟随林出门；左侧标靶可练枪。</p>
+      <h2 id="help-title">操作</h2>
       <div class="controls">
         <div><kbd>WASD</kbd>移动</div>
-        <div><kbd>鼠标</kbd>转动视角</div>
-        <div><kbd>左键</kbd>按住连续射击</div>
+        <div><kbd>鼠标</kbd>视角</div>
+        <div><kbd>左键</kbd>开火</div>
         <div><kbd>R</kbd>换弹</div>
-        <div><kbd>Shift</kbd>奔跑，消耗体力</div>
-        <div><kbd>Space</kbd>跳跃 / 越过路障</div>
-        <div><kbd>E</kbd>使用补给 / 扶起搭档</div>
+        <div><kbd>Shift</kbd>冲刺</div>
+        <div><kbd>Space</kbd>跳跃</div>
+        <div><kbd>E</kbd>互动</div>
         <div><kbd>右键</kbd>瞄准</div>
-        <div><kbd>F</kbd>开关手电</div>
-        <div><kbd>Esc</kbd>暂停 / 释放鼠标</div>
-      </div>
-      <div class="help-foot">
-        <kbd>H</kbd>关闭 / 再次打开此提示　·　打开提示时游戏暂停
+        <div><kbd>F</kbd>手电</div>
+        <div><kbd>Esc</kbd>暂停</div>
+        <div><kbd>H</kbd>提示</div>
       </div>
     </section>
     <div id="pause" class="screen modal-screen" hidden>
-      <div class="eyebrow">电台待机</div>
-      <h2>喘口气。</h2>
-      <p id="pause-text">游戏已暂停。点击继续，重新锁定鼠标。</p>
+      <h2>暂停</h2>
+      <p id="pause-text" hidden></p>
       <button id="resume" class="primary">
-        <span>继续生存</span><span>→</span>
+        <span>继续</span><span>→</span>
       </button>
-      <p><kbd>H</kbd>查看操作　 <kbd>Esc</kbd>释放鼠标</p>
     </div>
     <div id="gameover" class="screen modal-screen" hidden>
-      <div class="eyebrow">信号中断 / RUN ENDED</div>
-      <h2>余光熄灭。</h2>
-      <p>这次你守住了这里。下一次，再多撑一会。</p>
+      <h2>结束</h2>
       <div class="results">
-        <div><strong id="result-wave">0</strong><small>完成波次</small></div>
-        <div><strong id="result-kills">0</strong><small>个人击杀</small></div>
+        <div><strong id="result-wave">0</strong><small>波次</small></div>
+        <div><strong id="result-kills">0</strong><small>击杀</small></div>
         <div><strong id="result-score">0</strong><small>得分</small></div>
       </div>
       <div id="result-time" class="mono"></div>
       <button id="restart" class="primary">
-        <span>重新进入安全屋</span><span>↻</span>
+        <span>重来</span><span>↻</span>
       </button>
     </div>
     <div id="fatal" class="screen modal-screen" hidden>
@@ -1046,7 +744,7 @@
       (async function loadEngine() {
         if (location.protocol === 'file:') {
           document.getElementById('load-error').textContent =
-            '浏览器无法通过直接打开的 HTML 文件加载游戏资源。请双击同文件夹里的「启动游戏.command」，它会自动启动游戏并打开浏览器。服务已启动时，可点击上方按钮进入。';
+            '请双击「启动游戏.command」启动游戏。';
           const start = document.getElementById('start');
           start.textContent = '打开本地游戏'; start.disabled = false;
           start.onclick = () => location.assign('http://127.0.0.1:8000/');
@@ -1054,18 +752,18 @@
         }
         try {
           window.THREE = await import('./vendor/three/three.module.js');
-          document.getElementById('start').textContent = '正在加载角色与装备…';
+          document.getElementById('start').textContent = '加载中…';
           const [{loadCharacterFactory}, {createCombatFeedback}] = await Promise.all([import('./characters.js'), import('./combat.js')]);
           window.createCombatFeedback = createCombatFeedback;
           const factory = await loadCharacterFactory((done, total) => {
-            document.getElementById('start').textContent = `正在加载角色与装备… ${Math.round(done / total * 100)}%`;
+            document.getElementById('start').textContent = `加载中… ${Math.round(done / total * 100)}%`;
           });
           window.createCharacterFactory = () => factory;
           boot();
         } catch (error) {
           console.error(error);
           document.getElementById('load-error').textContent =
-            '游戏资源加载失败。本地运行时，请重新双击「启动游戏.command」；在线运行时，请刷新页面重试。详情：' + error.message;
+            '资源加载失败，请刷新或重新启动游戏。详情：' + error.message;
           const start = document.getElementById('start');
           start.textContent = '重新加载'; start.disabled = false;
           start.onclick = () => location.reload();
@@ -1088,9 +786,7 @@
           "gameover",
           "wave",
           "wave-sub",
-          "zone",
           "objective",
-          "score",
           "kills",
           "health",
           "health-bar",
@@ -1102,7 +798,6 @@
           "interact",
           "reload",
           "toast",
-          "radio",
           "damage",
           "hitmarker",
         ].forEach((id) => (ui[id] = $(id)));
@@ -1336,7 +1031,6 @@
               );
         }
         box(0, 11, -64, 45, 22, 13, "#909c8f");
-        sign("04  /  WATERWORKS", 0, 14, -57.4, 19, 3.4);
         for (let x = -18; x <= 18; x += 6)
           box(x, 6, -57.4, 3, 5, 0.15, "#4f635b");
         cylinder(19, 19, -62, 4, 9, "#748278");
@@ -1374,19 +1068,7 @@
         };
         colliders.push(gateCollider);
         occluders.push(gate);
-        sign("出口  ↑  EXIT", 0, 4.4, 27.3, 4.9, 0.85, "#c9e7b6", "#345543");
-        sign(
-          "安全屋 / SAFE ROOM",
-          0,
-          3.3,
-          41.5,
-          7,
-          1,
-          "#d6dfbe",
-          "#52604a",
-          Math.PI,
-        );
-        sign("射击训练  ←", -5.9, 3, 27.3, 5.8, 0.8, "#e6c391", "#5d6250");
+        sign("出口 ↑", 0, 4.4, 27.3, 4.9, 0.85, "#c9e7b6", "#345543");
         for (let z = 30; z < 39; z += 3) {
           const arrow = new T.Mesh(
             new T.ConeGeometry(0.36, 1, 3),
@@ -1435,8 +1117,8 @@
         wall(-30, -19, 8, 0.5, 4);
         wall(-21, -19, 4, 0.5, 4);
         box(-26.5, 0.035, -8, 15, 0.06, 22, "#8d9988");
-        sign("+  社区诊所", -26, 3.6, 3.3, 8, 1, "#dce4cc", "#507967");
-        sign("西线 / 医疗补给", -25, 2, 22, 7, 1, "#d6e2bd", "#426756");
+        sign("+ 医疗", -26, 3.6, 3.3, 8, 1, "#dce4cc", "#507967");
+        sign("← 医疗", -25, 2, 22, 7, 1, "#d6e2bd", "#426756");
         box(-32, 0.45, -8, 2, 0.9, 6, "#657c70", true);
         box(-22, 0.4, -14, 2, 0.8, 4, "#b0b6a0", true);
         box(-22, 0.91, -14, 1.7, 0.18, 3.8, "#697f6b");
@@ -1470,7 +1152,7 @@
         occluders.push(ramp);
         for (let z = -4; z > -12; z -= 1)
           box(20, (-3 - z) * 0.3 + 0.025, z, 5.9, 0.04, 0.06, "#bdba92");
-        sign("东线  →  维修平台", 25, 2.5, 22, 8, 1, "#e6cd9e", "#696a4d");
+        sign("弹药 →", 25, 2.5, 22, 8, 1, "#e6cd9e", "#696a4d");
         sign("弹药  ↑", 20, 3.5, -25.7, 5, 1);
         box(30, 1.3, 10, 5, 2.6, 7, "#687b69", true);
         for (let z = 7; z <= 13; z += 0.5)
@@ -1482,7 +1164,7 @@
         wall(-9, -31, 6, 0.5, 5);
         wall(9, -31, 6, 0.5, 5);
         box(0, 5, -31, 12, 0.6, 0.6, "#738470");
-        sign("泵站 / PUMP HALL", 0, 4.9, -30.6, 10, 1.2);
+        sign("泵站", 0, 4.9, -30.6, 10, 1.2);
         box(0, 0.025, -41, 24, 0.05, 20, "#808d7c");
         for (const x of [-7, 7]) {
           cylinder(x, 1.4, -43, 1.6, 2.8, "#647d6d");
@@ -1524,7 +1206,6 @@
             const wheel = cylinder(x, 0.52, z, 0.5, 0.3, "#344039");
             wheel.rotation.z = Math.PI / 2;
           }
-        sign("城市通勤 / 04", -4, 1.2, -7.91, 2.6, 0.45, "#414f44", "#bcb995");
         for (const [x, z] of [
           [-11, 22],
           [11, -24],
@@ -1593,7 +1274,7 @@
           halo.position.y = 0.05;
           supplies.push({ group, type, x, z, y, ready: 0, halo });
           sign(
-            type === "med" ? "+ 医疗" : "弹药 / AMMO",
+            type === "med" ? "+ 医疗" : "弹药",
             x,
             y + 2,
             z - 0.45,
@@ -1609,7 +1290,7 @@
         supply(22, -22, "ammo", 2.7);
         supply(-6, -47, "ammo");
         supply(30, 15, "med");
-        const district = createDistrict({T, world, scene, box, cylinder, mesh, sign, mat, staticParts});
+        const district = createDistrict({T, world, scene, box, cylinder, mesh, mat, staticParts});
         for (const c of district.vehicleColliders) colliders.push({...c,b:0,h:1.55,active:true});
         batchStatic();
         // First-person weapon is rendered separately so nearby walls do not clip its silhouette.
@@ -1741,11 +1422,11 @@
         scene.add(ally.g);
         ally.g.position.set(3, 0, 35);
         const allyLabel = sign(
-          "林 · 领路 / LIN",
+          "林",
           0,
           2.35,
           0,
-          1.55,
+          0.6,
           0.3,
           "#b9ddc4",
           "#355c55",
@@ -1786,7 +1467,6 @@
           score: 0,
           kills: 0,
           toast: 0,
-          radio: 0,
           hurt: 0,
           training: 0,
           navTimer: 0,
@@ -1816,16 +1496,10 @@
           lastTime = 0,
           uiClock = 0,
           stepClock = 0;
-        function toast(title, sub = "", duration = 3) {
-          ui.toast.children[0].textContent = title;
-          ui.toast.children[1].textContent = sub;
+        function toast(title, duration = 1.8) {
+          ui.toast.textContent = title;
           state.toast = duration;
           ui.toast.style.opacity = 1;
-        }
-        function radio(text, duration = 4) {
-          ui.radio.textContent = "林：" + text;
-          state.radio = duration;
-          ui.radio.hidden = false;
         }
         const combat = createCombatFeedback({scene, camera, weaponScene, weaponCamera, gun, muzzle, ejector, bolt, flash,
           floorAt, marker: ui.hitmarker, numbersLayer: $('damage-numbers'), killLabel: $('kill-confirm'),
@@ -2105,7 +1779,7 @@
             b.group.visible = false;
             b.c.active = false;
             burst(v3(b.c.x, 0.65, b.c.z), 12);
-            radio("路障被突破了，换个位置！", 2.5);
+            toast("路障已破");
           }
         }
         function shoot() {
@@ -2114,7 +1788,7 @@
             player.fire = 0.3;
             sound("dry");
             if (player.reserve > 0) reload();
-            else toast("弹药耗尽", "前往弹药箱，按 E 补充", 1.5);
+            else toast("弹药耗尽");
             return;
           }
           // Synchronize the camera with this tick's movement and mouse input before raycasting.
@@ -2146,7 +1820,6 @@
             if (target) {
               target.material.color.set("#acd693"); target.userData.reset = .7; state.training++;
               combat.targetHit();
-              if (state.training === 1) toast("命中标靶", "按 R 练习换弹；准备好后走向出口", 3);
               burst(targetHit.point, 4);
             } else {
               const e = targetHit.object.userData.enemy;
@@ -2163,7 +1836,7 @@
           if (player.ammo === 0 && player.reserve > 0) setReloadHint();
         }
         function setReloadHint() {
-          ui["ammo-hint"].textContent = "弹匣已空 · 按 R 换弹";
+          ui["ammo-hint"].textContent = "R 换弹";
         }
         function reload() {
           if (player.reload > 0 || player.ammo === 30 || player.reserve <= 0)
@@ -2183,29 +1856,29 @@
           if (nearby === ally) {
             ally.hp = 65;
             ally.down = 0;
-            radio("我还能继续。谢谢你！");
+            toast("林已扶起");
             return;
           }
           const s = nearby;
           if (state.time < s.ready) return;
           if (s.type === "ammo") {
             if (player.reserve >= 240 && player.ammo === 30) {
-              toast("弹药已充足", "", 1.2);
+              toast("弹药已满");
               return;
             }
             player.reserve = 240;
             player.ammo = 30;
             player.reload = 0;
             s.ready = state.time + 18;
-            toast("弹药补充完成", "弹匣装满 · 备用弹药 240", 2);
+            toast("弹药补满");
           } else {
             if (player.hp >= 100) {
-              toast("生命值已满", "把医疗留到需要的时候", 1.5);
+              toast("生命已满");
               return;
             }
             player.hp = Math.min(100, player.hp + 60);
             s.ready = state.time + 35;
-            toast("已使用医疗补给", "恢复 60 生命值", 2);
+            toast("生命恢复");
           }
           sound("pickup");
         }
@@ -2213,10 +1886,7 @@
           state.gate = true;
           gateCollider.active = false;
           state.between = 0.8;
-          ui.objective.textContent = "跟随林前往西侧医疗诊所。";
           buildNav();
-          toast("街道已失守", "感染者正在靠近 · 打开手电，跟上林。", 3);
-          radio(flashlight.visible ? "跟上我，先去西侧诊所！" : "街道断电了。按 F 打开手电，跟上我！", 6);
         }
         function startWave() {
           state.wave++;
@@ -2224,13 +1894,7 @@
             state.wave === 1 ? 6 : Math.min(52, 6 + state.wave * 3);
           state.spawnClock = 0;
           state.between = -1;
-          toast(
-            "第 " + String(state.wave).padStart(2, "0") + " 波",
-            state.wave === 1
-              ? "少量感染者 · 保持距离，瞄准头部"
-              : "听脚步，留意侧后方。",
-            3,
-          );
+          toast("第 " + state.wave + " 波");
           sound("wave");
         }
         function updateWave(dt) {
@@ -2272,8 +1936,7 @@
               ally.hp = 60;
               ally.down = 0;
             }
-            toast("街区暂时安全", "6 秒整备时间 · 寻找补给，照应搭档", 4);
-            radio("这波结束了。抓紧补给，下一波快到了。");
+            toast("本波结束");
           }
         }
         function updateEnemies(dt) {
@@ -2308,7 +1971,7 @@
                   ally.hp = Math.max(0, ally.hp - e.damage);
                   if (ally.hp <= 0) {
                     ally.down = 20;
-                    radio("我倒下了！靠近我，按 E 拉我一把。", 5);
+                    toast("林倒地");
                   }
                 }
               }
@@ -2360,7 +2023,7 @@
             e.animate(e.age, dist > reach, dist < reach + .4);
           }
         }
-        const guide = createGuide({T, scene, player, ally, state, blocked, floorAt, move, radio, toast});
+        const guide = createGuide({T, scene, player, ally, state, blocked, floorAt, move, toast});
         const allyTracer = new T.Line(new T.BufferGeometry().setFromPoints([v3(), v3()]),
           new T.LineBasicMaterial({color:'#f3cf8b',transparent:true,opacity:.8}));
         allyTracer.visible=false;allyTracer.frustumCulled=false;scene.add(allyTracer);
@@ -2411,7 +2074,7 @@
           }
           if (player.hp < 45 && ally.heal <= 0 && d < 3.8) {
             player.hp = Math.min(100, player.hp + 22);ally.heal = 45;
-            radio("我给你包扎一下。继续移动！");sound("pickup");
+            toast("生命 +22");sound("pickup");
           }
           allyLabel.rotation.y = player.yaw - ally.g.rotation.y;
           if(ally.shot>0){
@@ -2422,7 +2085,7 @@
         }
         function toggleFlashlight() {
           flashlight.visible=!flashlight.visible;
-          if(flashlight.visible&&!state.flashlightUsed){state.flashlightUsed=true;radio('很好。照着街角走，别让僵尸摸到背后。',4);}
+          if(flashlight.visible)state.flashlightUsed=true;
           updateUI();
         }
         function updatePlayer(dt) {
@@ -2493,7 +2156,6 @@
             if (e.corpseTime > 5) { e.g.visible = false; corpses.splice(i, 1); enemyPool.push(e); }
           }
           state.toast = Math.max(0, state.toast - dt);
-          state.radio = Math.max(0, state.radio - dt);
           state.hurt = Math.max(0, state.hurt - dt);
           for (let i = effects.length - 1; i >= 0; i--) {
             const e = effects[i];
@@ -2549,11 +2211,11 @@
             const left = Math.ceil(nearby.ready - state.time);
             ui.interact.innerHTML =
               left > 0
-                ? "补给整理中 · " + left + " 秒"
+                ? "冷却 " + left + "s"
                 : "<kbd>E</kbd>" +
                   (nearby.type === "ammo"
-                    ? "补充弹药"
-                    : "使用医疗包 · 恢复 60 生命");
+                    ? "补弹"
+                    : "治疗");
           }
         }
         const mapctx = $("minimap").getContext("2d");
@@ -2610,7 +2272,7 @@
           c.restore();
           c.font = "9px monospace";
           c.fillStyle = "#aebfaf";
-          c.fillText("N ↑   LOS ANGELES / 04", 9, 209);
+          c.fillText("N ↑", 9, 209);
         }
         function updateUI() {
           ui.health.textContent = Math.ceil(player.hp);
@@ -2622,52 +2284,32 @@
           ui.ammo.style.color =
             player.ammo < 6 ? "var(--orange)" : "var(--ink)";
           ui.reserve.textContent = player.reserve;
-          ui.score.textContent = String(state.score).padStart(5, "0");
           ui.kills.textContent = state.kills;
           ui.wave.textContent = String(state.wave).padStart(2, "0");
           ui["wave-sub"].textContent = !state.gate
-            ? "训练阶段 · 暂无感染者"
+            ? ""
             : state.between >= 0
-              ? "下一波 " + Math.max(0, Math.ceil(state.between)) + " 秒"
-              : "感染者 " + enemies.length + "　/　待出现 " + state.pending;
+              ? "下一波 " + Math.max(0, Math.ceil(state.between)) + "s"
+              : "剩余 " + (enemies.length + state.pending);
           ui.reload.hidden = player.reload <= 0;
           ui.reload.textContent =
-            "正在换弹 " + Math.max(0, player.reload).toFixed(1) + "s";
-          ui["ammo-hint"].textContent =
-            player.ammo === 0
-              ? "弹匣已空 · R 换弹"
-              : "R 换弹　·　E 补给　·　H 操作提示";
-          ui["ally-status"].textContent =
-            ally.hp <= 0
-              ? "倒地 · 靠近按 E 扶起"
-              : "生命 " +
-                Math.ceil(ally.hp) +
-                " · " +
-                guide.status;
-          ui.zone.textContent =
-            player.z > 26 && Math.abs(player.x) < 11
-              ? "出生安全屋"
-              : player.x < -18
-                ? "西线 / 社区诊所"
-                : player.y > 1.3
-                  ? "东线 / 维修平台"
-                  : player.z < -30 && Math.abs(player.x) < 13
-                    ? "泵站大厅"
-                    : player.x > 13
-                      ? "东线 / 维修区"
-                      : "日落大道 / SUNSET BLVD";
+            "换弹 " + Math.max(0, player.reload).toFixed(1) + "s";
+          ui["ammo-hint"].textContent = player.reload > 0 ? "" :
+            player.ammo < 10 && player.reserve > 0 ? "R 换弹" :
+            player.ammo === 0 ? "寻找弹药" : "";
+          const allyStatus = guide.returning ? "接应" : guide.complete ? "掩护" :
+            guide.status.startsWith("带路") ? "带路" : "等待";
+          ui["ally-status"].textContent = ally.hp <= 0 ? "倒地" :
+            Math.ceil(ally.hp) + " · " + allyStatus;
           ui.toast.style.opacity =
             state.toast > 0 ? Math.min(1, state.toast * 2) : 0;
-          ui.radio.hidden = state.radio <= 0;
           ui.damage.style.opacity =
             Math.min(0.7, state.hurt) +
             (player.hp < 25 && state.mode === "playing" ? 0.12 : 0);
-          $("flashlight-tip").hidden = flashlight.visible || state.mode !== "playing";
-          $("lamp-state").textContent = flashlight.visible ? "F 手电 · 开启" : "F 手电 · 关闭";
+          $("flashlight-tip").hidden = flashlight.visible || state.help || state.mode !== "playing";
+          ui.objective.textContent = ally.hp <= 0 ? "扶起林" : guide.complete ? "守住泵站" : "跟随林";
           if(state.gate){
             const dest=guide.target();
-            ui.objective.textContent = ally.hp<=0 ? "林倒地了 · 靠近按 E 扶起，再继续路线。" :
-              dest ? `${guide.stage+1}/3 · 跟随林前往${dest.name} · ${Math.round(Math.hypot(dest.x-player.x,dest.z-player.z))} m` : "路线完成 · 与林守住泵站，抵御尸潮。";
             const waypoint=$("waypoint");waypoint.hidden=!dest;
             if(dest){
               camera.updateMatrixWorld(true);
@@ -2706,7 +2348,6 @@
             score: 0,
             kills: 0,
             toast: 0,
-            radio: 0,
             hurt: 0,
             training: 0,
             navTimer: 0,
@@ -2768,8 +2409,6 @@
           ui.pause.hidden = true;
           ui.help.hidden = false;
           ui.hud.style.display = "block";
-          ui.objective.textContent = "按 F 打开手电，跟随林走向出口。左侧可以练枪。";
-          radio("街道断电了。按 F 打开手电筒，准备好就跟我出门。",7);
           updateUI();
           updateCamera(0);
           setHelp(true);
@@ -2786,13 +2425,9 @@
           $("result-wave").textContent = state.completed;
           $("result-kills").textContent = state.kills;
           $("result-score").textContent = state.score;
-          $("result-time").textContent =
-            "生存时间 " +
-            Math.floor(state.time / 60) +
-            " 分 " +
-            Math.floor(state.time % 60) +
-            " 秒  /  搭档击杀 " +
-            ally.kills;
+          $("result-time").textContent = "用时 " +
+            String(Math.floor(state.time / 60)).padStart(2, "0") + ":" +
+            String(Math.floor(state.time % 60)).padStart(2, "0");
           if (document.pointerLockElement) document.exitPointerLock();
         }
         async function lock() {
@@ -2801,11 +2436,11 @@
             if (result && result.catch) await result;
           } catch (e) {
             pause(
-              "鼠标锁定未成功，请再次点击继续；本地运行请使用「启动游戏.command」打开游戏。",
+              "请点击继续以启用鼠标。",
             );
           }
         }
-        function pause(text = "游戏已暂停。点击继续，重新锁定鼠标。") {
+        function pause(text = "") {
           if (state.mode !== "playing") return;
           state.mode = "paused";
           combat.suspend();
@@ -2814,6 +2449,7 @@
           aiming = false;
           ui.pause.hidden = false;
           $("pause-text").textContent = text;
+          $("pause-text").hidden = !text;
         }
         function setHelp(open) {
           state.help = open;
@@ -2832,7 +2468,7 @@
         }
         $("help-close").onclick = () => setHelp(false);
         ui.start.disabled = false;
-        ui.start.innerHTML = "<span>进入安全屋</span><span>→</span>";
+        ui.start.innerHTML = "<span>开始</span><span>→</span>";
         ui.start.onclick = () => {
           reset();
           sound("pickup");

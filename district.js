@@ -1,5 +1,5 @@
 /* Original Los Angeles quarantine district. All artwork is generated locally. */
-window.createDistrict = function ({T, world, scene, box, cylinder, mesh, sign, mat, staticParts}) {
+window.createDistrict = function ({T, world, scene, box, cylinder, mesh, mat, staticParts}) {
   let seed = 1046;
   const random = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296);
   const stone = '#84766a', rust = '#704536', dark = '#292c2b';
@@ -65,7 +65,6 @@ window.createDistrict = function ({T, world, scene, box, cylinder, mesh, sign, m
   }
   for(const [x,z,h,l] of [[-11,18,11,-.9],[11,12,13,1],[-11,-20,12,-.6],[11,-33,14,1.6],[-30,28,13,-2],[32,-34,14,1],[-40,-5,17,-1],[40,2,16,2]])palm(x,z,h,l);
   // Low-rise stucco storefronts mask the old perimeter; taller damaged blocks remain behind them.
-  const shopNames=['SUNSET LIQUOR','LAUNDRY • 24 HRS','EL SOL TAQUERIA','SUNSET MOTOR INN','PAWN & LOAN','HOLLYWOOD AUTO'];
   for(let i=0;i<6;i++) {
     const side=i%2?-1:1,x=side*34.7,z=24-Math.floor(i/2)*24,h=6.3+(i%3)*1.3;
     box(x,h/2,z,3.2,h,18,plaster);
@@ -80,7 +79,6 @@ window.createDistrict = function ({T, world, scene, box, cylinder, mesh, sign, m
       }
       if(i%2===0)box(x-side*1.7,4.9,wz,.1,1.55,2,'#323b3a');
     }
-    sign(shopNames[i],x-side*1.89,4,z,14,1.05,i===0?'#e6be7c':'#d6c4a7',i===0?'#793e35':'#3b4b46',side*Math.PI/2);
     box(x,h+.8,z+3,2,1.25,2,'#5d635e');
     if(i%2) {
       for(let b=0;b<3;b++)box(x,h+1+b*.55,z-5+b*.4,2.9,.4,2.3-b*.5,stone).rotation.z=b*.11;
@@ -88,16 +86,15 @@ window.createDistrict = function ({T, world, scene, box, cylinder, mesh, sign, m
     }
   }
   // A detailed storefront on the central divider is visible immediately after leaving the safehouse.
-  for(const [x,z,label,c] of [[-15,22.56,'SUNSET LIQUOR','#823f35'],[14,21.55,'LOS FELIZ AUTO','#3f6662']]) {
+  for(const [x,z,c] of [[-15,22.56,'#823f35'],[14,21.55,'#3f6662']]) {
     box(x,2,z,3.8,3.5,.1,plaster);
     box(x,1.45,z+.07,2.4,2.7,.08,'#292c29');
     for(let y=.3;y<2.8;y+=.23)box(x,y,z+.13,2.3,.06,.05,'#62635b');
-    sign(label,x,3.9,z+.17,4.5,.7,'#e1c798',c);
     const awning=box(x,3.25,z+.65,4.7,.17,1.4,c);awning.rotation.x=.14;
     box(x,3.08,z+1.28,4.7,.25,.08,c);
   }
   // Street-facing shop windows, boarded doors and broken upper floors replace blank block walls.
-  for(const [x,z,side,label,tint] of [[-12.43,15,1,'LIQUOR • BEER • WINE','#754534'],[-12.43,3,1,'NO ENTRY / INFECTED','#504734'],[-12.43,-7,1,'PHARMACY','#3f6558'],[11.94,14,-1,'AUTO REPAIR','#47605b']]) {
+  for(const [x,z,side,tint] of [[-12.43,15,1,'#754534'],[-12.43,3,1,'#504734'],[-12.43,-7,1,'#3f6558'],[11.94,14,-1,'#47605b']]) {
     for(let j=-1;j<=1;j++) {
       const zz=z+j*2.8;
       box(x,1.9,zz,.08,2.3,2.35,'#1c292a');
@@ -105,7 +102,6 @@ window.createDistrict = function ({T, world, scene, box, cylinder, mesh, sign, m
       for(const y of [1.2,2.05])box(x+side*.09,y,zz,.08,.26,2.3,'#746047').rotation.x=j*.09;
       box(x+side*.08,2,zz-1.2,.1,2.5,.1,'#6c7569');
     }
-    sign(label,x+side*.15,3.83,z,8,.66,'#c8b69a',tint,side*Math.PI/2);
     box(x+side*.5,3.35,z,1,.14,8.5,tint).rotation.z=side*-.12;
     box(x+side*.96,3.17,z,.09,.24,8.5,tint);
   }
@@ -131,8 +127,6 @@ window.createDistrict = function ({T, world, scene, box, cylinder, mesh, sign, m
   for(const color of ['#7d887c','#87907f','#8c927c','#839380','#90998b','#768077']) {
     const m=mat(color);m.map=weather;m.color.set('#837f71');m.needsUpdate=true;
   }
-  sign('SUNSET BLVD',-8.7,5.4,5.4,4.6,.57,'#e6e5d5','#295048');
-  sign('LOS FELIZ',-9.9,4.8,5.4,2.5,.48,'#e6e5d5','#295048',Math.PI/2);
   cylinder(-10.5,2.8,5.5,.08,5.6,'#494b44');
   addBeam([-10.5,5.5,5.5],[5.3,5.5,5.5],.075,'#454b45');
   for(const x of [-4,4]) {
@@ -184,11 +178,7 @@ window.createDistrict = function ({T, world, scene, box, cylinder, mesh, sign, m
     }
     addBeam([x,.3,z],[x+.7,2.8,z-.5],.025,rust);addBeam([x+.4,.1,z],[x-.2,2.1,z+.7],.025,rust);
   }
-  // Rooftop billboard, utility wires and downtown silhouette against the smoky night.
-  for(const x of [-22,-14])addBeam([x,7,-52],[x,18,-52],.1,'#49443b');
-  box(-18,16.1,-52.3,13,5,.25,'#403f37');
-  sign('LOS ANGELES',-18,16.9,-52,12,1.3,'#ead0a4','#635341');
-  sign('STAY HOME.  NO RESCUE.',-18,14.9,-52,12,1,'#d2a280','#4d4237');
+  // Utility wires and downtown silhouette against the smoky night.
   for(const side of [-1,1]) {
     for(let i=0;i<4;i++) {
       const x=side*29,z=24-i*23;cylinder(x,4.8,z,.11,9.6,'#5b4938');box(x,9,z,2.7,.14,.16,'#4a4034');
