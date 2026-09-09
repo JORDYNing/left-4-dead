@@ -421,8 +421,8 @@
         position: absolute;
         left: 50%;
         top: 50%;
-        width: 28px;
-        height: 28px;
+        width: var(--gap, 28px);
+        height: var(--gap, 28px);
         transform: translate(-50%, -50%);
         transition:
           width 0.09s,
@@ -440,23 +440,43 @@
         height: 6px;
         left: 50%;
         top: 0;
-        box-shadow: 0 22px #edf1e9;
+        box-shadow: 0 calc(var(--gap, 28px) - 6px) #edf1e9;
       }
       #crosshair:after {
         width: 6px;
         height: 1px;
         top: 50%;
         left: 0;
-        box-shadow: 22px 0 #edf1e9;
+        box-shadow: calc(var(--gap, 28px) - 6px) 0 #edf1e9;
       }
       #hitmarker {
         position: absolute;
-        left: 50%;
-        top: 50%;
-        font: 32px monospace;
-        transform: translate(-50%, -50%);
-        opacity: 0;
-        color: var(--orange);
+        left: 50%; top: 50%; width: 28px; height: 28px;
+        transform: translate(-50%, -50%); opacity: 0;
+        color: #fff1d7; filter: drop-shadow(0 1px 2px #000);
+      }
+      #hitmarker i {
+        position: absolute; left: 13px; top: 10px; width: 2px; height: 8px;
+        background: currentColor; transform: rotate(45deg) translateY(-11px);
+      }
+      #hitmarker i:nth-child(2) { transform: rotate(135deg) translateY(-11px); }
+      #hitmarker i:nth-child(3) { transform: rotate(225deg) translateY(-11px); }
+      #hitmarker i:nth-child(4) { transform: rotate(315deg) translateY(-11px); }
+      #hitmarker[data-kind="head"] { color: #ffd078; }
+      #hitmarker[data-kind="kill"] { color: #ff8068; }
+      #hitmarker[data-kind="kill"] i { width: 3px; height: 10px; }
+      #damage-numbers { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+      .damage-number {
+        position: absolute; font: 700 22px/1 "SFMono-Regular", Consolas, monospace;
+        color: #fff1d7; text-shadow: 0 2px 3px #000, 0 0 8px #15120c;
+        will-change: transform, opacity; white-space: nowrap;
+      }
+      .damage-number.headshot { color: #ffd078; font-size: 27px; }
+      .damage-number.lethal { color: #ff9879; }
+      #kill-confirm {
+        position: absolute; top: calc(50% + 43px); left: 50%; transform: translateX(-50%);
+        font-size: 12px; font-weight: 600; letter-spacing: 2px; color: #ffc199;
+        text-shadow: 0 2px 4px #000; opacity: 0; white-space: nowrap;
       }
       #damage {
         position: fixed;
@@ -916,7 +936,9 @@
       ></canvas>
       <div class="center-dot"></div>
       <div id="crosshair"></div>
-      <div id="hitmarker">×</div>
+      <div id="damage-numbers" aria-hidden="true"></div>
+      <div id="hitmarker" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+      <div id="kill-confirm" aria-hidden="true"></div>
       <div id="toast"><strong></strong><small></small></div>
       <div id="interact" hidden></div>
       <div id="reload" hidden>正在换弹</div>
@@ -1007,10 +1029,19 @@
     <script src="guide.js"></script>
     <script>
       (async function loadEngine() {
+        if (location.protocol === 'file:') {
+          document.getElementById('load-error').textContent =
+            '浏览器无法通过直接打开的 HTML 文件加载游戏资源。请双击同文件夹里的「启动游戏.command」，它会自动启动游戏并打开浏览器。服务已启动时，可点击上方按钮进入。';
+          const start = document.getElementById('start');
+          start.textContent = '打开本地游戏'; start.disabled = false;
+          start.onclick = () => location.assign('http://127.0.0.1:8000/');
+          return;
+        }
         try {
           window.THREE = await import('./vendor/three/three.module.js');
           document.getElementById('start').textContent = '正在加载角色与装备…';
-          const { loadCharacterFactory } = await import('./characters.js');
+          const [{loadCharacterFactory}, {createCombatFeedback}] = await Promise.all([import('./characters.js'), import('./combat.js')]);
+          window.createCombatFeedback = createCombatFeedback;
           const factory = await loadCharacterFactory((done, total) => {
             document.getElementById('start').textContent = `正在加载角色与装备… ${Math.round(done / total * 100)}%`;
           });
@@ -1018,7 +1049,8 @@
           boot();
         } catch (error) {
           console.error(error);
-          document.getElementById('load-error').textContent = '资源加载失败，请检查网络后重试。' + error.message;
+          document.getElementById('load-error').textContent =
+            '游戏资源加载失败。本地运行时，请重新双击「启动游戏.command」；在线运行时，请刷新页面重试。详情：' + error.message;
           const start = document.getElementById('start');
           start.textContent = '重新加载'; start.disabled = false;
           start.onclick = () => location.reload();
@@ -1638,7 +1670,11 @@
         const barrel = mesh(new T.CylinderGeometry(.026,.026,.28,12), "#263137", gun);
         barrel.rotation.x=Math.PI/2;barrel.position.set(.24,-.19,-.98);
         for(let i=0;i<6;i++)box(.24,-.083,-.49-i*.04,.12,.02,.018,"#273138",false,gun);
-        box(.31,-.18,-.51,.014,.06,.09,"#909182",false,gun);
+        const bolt = box(.31,-.18,-.51,.014,.06,.09,"#909182",false,gun);
+        const muzzle = new T.Object3D(), ejector = new T.Object3D();
+        muzzle.name = 'AR-04 muzzle'; ejector.name = 'AR-04 ejection port';
+        muzzle.position.set(.24, -.19, -1.12); ejector.position.set(.325, -.16, -.49);
+        gun.add(muzzle, ejector);
         const flash = mesh(
           new T.ConeGeometry(0.09, 0.25, 5),
           new T.MeshBasicMaterial({
@@ -1721,11 +1757,11 @@
         scene.add(particleMesh);
         particleMesh.frustumCulled = false;
         const dummy = new T.Object3D();
-        function burst(pos, n = 7, blood = false) {
+        function burst(pos, n = 7, blood = false, direction = null) {
           for (let i = 0; i < n && effects.length < 96; i++)
             effects.push({
               p: pos.clone(),
-              v: v3(rand(-2, 2), rand(0.5, 3), rand(-2, 2)),
+              v: v3(rand(-2, 2), rand(0.5, 3), rand(-2, 2)).addScaledVector(direction || v3(), blood ? 2 : 0),
               life: rand(0.14, 0.45),
               color: new T.Color(blood ? "#843c35" : "#f0c891"),
             });
@@ -1748,9 +1784,7 @@
           kills: 0,
           toast: 0,
           radio: 0,
-          hit: 0,
           hurt: 0,
-          flash: 0,
           training: 0,
           navTimer: 0,
           flashlightUsed: false,
@@ -1768,7 +1802,6 @@
           stamina: 100,
           reload: 0,
           fire: 0,
-          recoil: 0,
           grounded: true,
           moving: false,
           sprinting: false,
@@ -1777,8 +1810,6 @@
           aiming = false,
           locked = false,
           nearby = null,
-          audioCtx = null,
-          noiseBuffer = null,
           lastTime = 0,
           uiClock = 0,
           stepClock = 0;
@@ -1793,71 +1824,11 @@
           state.radio = duration;
           ui.radio.hidden = false;
         }
-        function sound(kind) {
-          if (!$("sound").checked) return;
-          try {
-            if (!audioCtx) {
-              audioCtx = new (window.AudioContext ||
-                window.webkitAudioContext)();
-              noiseBuffer = audioCtx.createBuffer(
-                1,
-                audioCtx.sampleRate * 0.2,
-                audioCtx.sampleRate,
-              );
-              const data = noiseBuffer.getChannelData(0);
-              for (let i = 0; i < data.length; i++)
-                data[i] = Math.random() * 2 - 1;
-            }
-            if (audioCtx.state === "suspended") audioCtx.resume();
-            const t = audioCtx.currentTime,
-              g = audioCtx.createGain();
-            g.connect(audioCtx.destination);
-            if (kind === "shot" || kind === "allyshot" || kind === "step") {
-              const s = audioCtx.createBufferSource(),
-                f = audioCtx.createBiquadFilter();
-              s.buffer = noiseBuffer;
-              f.type = "lowpass";
-              f.frequency.value = kind !== "step" ? 2300 : 280;
-              s.connect(f);
-              f.connect(g);
-              g.gain.setValueAtTime(kind === "shot" ? 0.12 : kind === "allyshot" ? 0.055 : 0.035, t);
-              g.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
-              s.start(t);
-              s.stop(t + 0.13);
-              s.onended = () => {
-                s.disconnect();
-                f.disconnect();
-                g.disconnect();
-              };
-            } else {
-              const o = audioCtx.createOscillator();
-              o.type = kind === "hurt" ? "sawtooth" : "triangle";
-              const freq =
-                {
-                  hit: 480,
-                  kill: 200,
-                  reload: 760,
-                  pickup: 680,
-                  hurt: 70,
-                  dry: 130,
-                  wave: 180,
-                }[kind] || 300;
-              o.frequency.setValueAtTime(freq, t);
-              o.frequency.exponentialRampToValueAtTime(freq * 0.45, t + 0.13);
-              g.gain.setValueAtTime(0.065, t);
-              g.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
-              o.connect(g);
-              o.start(t);
-              o.stop(t + 0.21);
-              o.onended = () => {
-                o.disconnect();
-                g.disconnect();
-              };
-            }
-          } catch (e) {
-            /* Audio is optional; simulation remains playable. */
-          }
-        }
+        const combat = createCombatFeedback({scene, camera, weaponScene, weaponCamera, gun, muzzle, ejector, bolt, flash,
+          floorAt, marker: ui.hitmarker, numbersLayer: $('damage-numbers'), killLabel: $('kill-confirm'),
+          crosshair: $('crosshair'), soundEnabled: () => $('sound').checked});
+        function sound(kind) { combat.audio.play(kind); }
+        $('sound').addEventListener('change', () => { if (!$('sound').checked) combat.audio.mute(); });
         // Height-aware circle collision and a flow field route actors around buildings.
         function floorAt(x, z) {
           if (x >= 14 && x <= 26 && z >= -26 && z <= -12) return 2.7;
@@ -2095,23 +2066,22 @@
           enemies.push(e);
           return e;
         }
-        function hurtEnemy(e, damage, point, byAlly = false) {
+        function hurtEnemy(e, damage, point, byAlly = false, headshot = false, shotDirection = null) {
           if (e.hp <= 0) return;
+          const source = byAlly ? ally : player;
+          const direction = shotDirection || v3(e.x - source.x, 0, e.z - source.z).normalize();
           e.hp -= damage;
           e.flash = 0.12;
-          e.bodyMat.emissive.set("#b19669");
-          const dx = e.x - player.x,
-            dz = e.z - player.z,
-            len = Math.hypot(dx, dz) || 1;
-          move(e, (dx / len) * 0.1, (dz / len) * 0.1, true);
-          burst(point, byAlly ? 2 : 6, true);
-          if (!byAlly) {
-            state.hit = 0.13;
-            sound("hit");
-          }
-          if (e.hp <= 0) {
+          e.bodyMat.emissive.set("#6b3425");
+          const lethal = e.hp <= 0;
+          move(e, direction.x * (lethal ? .24 : .1), direction.z * (lethal ? .24 : .1), true);
+          burst(point, lethal ? 16 : byAlly ? 2 : 7, true, direction);
+          combat.hit({point, damage, headshot, lethal, points: types[e.type].points, byAlly, direction});
+          if (lethal) {
             enemies.splice(enemies.indexOf(e), 1);
-            e.die(); e.corpseTime = 0; corpses.push(e);
+            e.die(); e.corpseTime = 0; e.deathFlash = .18;
+            e.bodyMat.emissive.set('#793222');
+            corpses.push(e);
             if (corpses.length > 8) {
               const old = corpses.shift(); old.g.visible = false; enemyPool.push(old);
             }
@@ -2121,12 +2091,8 @@
             } else {
               state.kills++;
               state.score += types[e.type].points;
-              sound("kill");
-              state.hit = 0.23;
             }
-            if (!byAlly && Math.random() < 0.12) {
-              player.reserve = Math.min(240, player.reserve + 8);
-            }
+            if (!byAlly && Math.random() < 0.12) player.reserve = Math.min(240, player.reserve + 8);
           }
         }
         function damageBarrier(b, amount) {
@@ -2140,7 +2106,7 @@
           }
         }
         function shoot() {
-          if (player.reload > 0 || player.fire > 0) return;
+          if (state.mode !== 'playing' || player.sprinting || player.reload > 0 || player.fire > 0) return;
           if (player.ammo <= 0) {
             player.fire = 0.3;
             sound("dry");
@@ -2148,46 +2114,49 @@
             else toast("弹药耗尽", "前往弹药箱，按 E 补充", 1.5);
             return;
           }
-          player.ammo--;
-          player.fire = 0.105;
-          player.recoil = Math.min(0.07, player.recoil + 0.023);
-          state.flash = 0.045;
-          sound("shot");
+          // Synchronize the camera with this tick's movement and mouse input before raycasting.
+          updateCamera(0);
           camera.updateMatrixWorld(true);
-          aimRay.setFromCamera({ x: 0, y: 0 }, camera);
-          aimRay.far = 90;
-          const origin = aimRay.ray.origin,
-            dir = aimRay.ray.direction;
-          const wallHit = obstruction(origin, dir, 90);
-          const hitObjects = targets.concat(
-            enemies.flatMap((e) => e.g.children),
-          );
-          const hits = aimRay.intersectObjects(hitObjects, true);
-          let hit = hits.find(
-            (h) => !h.object.userData.enemy || h.object.userData.enemy.hp > 0,
-          );
-          if (hit && (!wallHit || hit.distance < wallHit.distance)) {
-            const target =
-              hit.object.userData.targetParent ||
-              (hit.object.userData.target ? hit.object : null);
+          aimRay.setFromCamera({x: 0, y: 0}, camera);
+          const origin = aimRay.ray.origin.clone();
+          const shot = combat.shotDirection(aimRay.ray.direction, player.moving);
+          const dir = shot.direction;
+          aimRay.set(origin, dir); aimRay.far = 90;
+          let wallHit = obstruction(origin, dir, 90);
+          const hitObjects = targets.concat(enemies.flatMap(e => e.g.children));
+          const hit = aimRay.intersectObjects(hitObjects, true).find(h => !h.object.userData.enemy || h.object.userData.enemy.hp > 0);
+          let targetHit = hit && (!wallHit || hit.distance < wallHit.distance) ? hit : null;
+          let end = (targetHit || wallHit)?.point.clone() || origin.clone().addScaledVector(dir, 90);
+          let start = combat.socketWorld(muzzle);
+          // Close cover can block the muzzle even when the centre of the view clears it.
+          const toMuzzle = start.clone().sub(origin), toEnd = end.clone().sub(start);
+          const closeWall = obstruction(origin, toMuzzle.clone().normalize(), toMuzzle.length());
+          const muzzleWall = closeWall || obstruction(start, toEnd.clone().normalize(), Math.max(0, toEnd.length() - .04));
+          if (muzzleWall) {
+            wallHit = muzzleWall; targetHit = null; end = wallHit.point.clone();
+            if (closeWall) start = end.clone().addScaledVector(toMuzzle.normalize(), -.03);
+          }
+          player.ammo--; player.fire = .105 + (shot.first ? 0 : Math.min(0, player.fire));
+          combat.fire({...shot, origin, start, end});
+          if (targetHit) {
+            const target = targetHit.object.userData.targetParent || (targetHit.object.userData.target ? targetHit.object : null);
             if (target) {
-              target.material.color.set("#acd693");
-              target.userData.reset = 0.7;
-              state.training++;
-              state.hit = 0.16;
-              sound("hit");
-              if (state.training === 1)
-                toast("命中标靶", "按 R 练习换弹；准备好后走向出口", 3);
-              burst(hit.point, 4);
+              target.material.color.set("#acd693"); target.userData.reset = .7; state.training++;
+              combat.targetHit();
+              if (state.training === 1) toast("命中标靶", "按 R 练习换弹；准备好后走向出口", 3);
+              burst(targetHit.point, 4);
             } else {
-              const e = hit.object.userData.enemy;
-              if (e) hurtEnemy(e, hit.point.y - e.y > 1.58 * types[e.type].scale ? 70 : 34, hit.point);
+              const e = targetHit.object.userData.enemy;
+              if (e) {
+                const headshot = targetHit.point.y - e.y > 1.58 * types[e.type].scale;
+                hurtEnemy(e, headshot ? 70 : 34, targetHit.point, false, headshot, dir);
+              }
             }
           } else if (wallHit) {
-            burst(wallHit.point, 5);
-            if (wallHit.object.userData.barrier)
-              damageBarrier(wallHit.object.userData.barrier, 22);
+            burst(wallHit.point, 5); combat.impact(wallHit);
+            if (wallHit.object.userData.barrier) damageBarrier(wallHit.object.userData.barrier, 22);
           }
+          updateCamera(0);
           if (player.ammo === 0 && player.reserve > 0) setReloadHint();
         }
         function setReloadHint() {
@@ -2454,15 +2423,14 @@
           updateUI();
         }
         function updatePlayer(dt) {
-          player.fire = Math.max(0, player.fire - dt);
-          player.recoil = Math.max(0, player.recoil - dt * 0.15);
+          player.fire = Math.max(-dt, player.fire - dt);
           if (player.reload > 0) {
             player.reload -= dt;
             if (player.reload <= 0) {
               const n = Math.min(30 - player.ammo, player.reserve);
               player.ammo += n;
               player.reserve -= n;
-              sound("reload");
+              sound("reloadEnd");
             }
           }
           let x = (keys.has("KeyD") ? 1 : 0) - (keys.has("KeyA") ? 1 : 0),
@@ -2516,14 +2484,14 @@
         function updateEffects(dt) {
           for (let i = corpses.length - 1; i >= 0; i--) {
             const e = corpses[i]; e.corpseTime += dt; e.mixer.update(dt);
+            e.deathFlash = Math.max(0, (e.deathFlash || 0) - dt);
+            e.bodyMat.emissive.setRGB(.3, .075, .035).multiplyScalar(e.deathFlash / .18);
             if (e.corpseTime > 4.2) e.g.position.y = e.y - (e.corpseTime - 4.2) * 1.2;
             if (e.corpseTime > 5) { e.g.visible = false; corpses.splice(i, 1); enemyPool.push(e); }
           }
           state.toast = Math.max(0, state.toast - dt);
           state.radio = Math.max(0, state.radio - dt);
-          state.hit = Math.max(0, state.hit - dt);
           state.hurt = Math.max(0, state.hurt - dt);
-          state.flash = Math.max(0, state.flash - dt);
           for (let i = effects.length - 1; i >= 0; i--) {
             const e = effects[i];
             e.life -= dt;
@@ -2688,7 +2656,6 @@
           ui.toast.style.opacity =
             state.toast > 0 ? Math.min(1, state.toast * 2) : 0;
           ui.radio.hidden = state.radio <= 0;
-          ui.hitmarker.style.opacity = state.hit > 0 ? 1 : 0;
           ui.damage.style.opacity =
             Math.min(0.7, state.hurt) +
             (player.hp < 25 && state.mode === "playing" ? 0.12 : 0);
@@ -2712,6 +2679,7 @@
           drawMap();
         }
         function reset() {
+          combat.reset();
           for (const e of [...enemies, ...corpses]) {
             e.g.visible = false;
             enemyPool.push(e);
@@ -2736,9 +2704,7 @@
             kills: 0,
             toast: 0,
             radio: 0,
-            hit: 0,
             hurt: 0,
-            flash: 0,
             training: 0,
             navTimer: 0,
           });
@@ -2755,7 +2721,6 @@
             stamina: 100,
             reload: 0,
             fire: 0,
-            recoil: 0,
             grounded: true,
             moving: false,
             sprinting: false,
@@ -2792,6 +2757,7 @@
           mouseDown = false;
           aiming = false;
           flashlight.visible = false;
+          camera.fov = 76;
           buildNav();
           buildField();
           ui.menu.hidden = true;
@@ -2805,6 +2771,7 @@
           updateCamera(0);
         }
         function endGame() {
+          combat.suspend();
           state.mode = "dead";
           keys.clear();
           mouseDown = false;
@@ -2830,13 +2797,14 @@
             if (result && result.catch) await result;
           } catch (e) {
             pause(
-              "鼠标锁定未成功，请再次点击继续；也可直接打开这个 HTML 文件游玩。",
+              "鼠标锁定未成功，请再次点击继续；本地运行请使用「启动游戏.command」打开游戏。",
             );
           }
         }
         function pause(text = "游戏已暂停。点击继续，重新锁定鼠标。") {
           if (state.mode !== "playing") return;
           state.mode = "paused";
+          combat.suspend();
           keys.clear();
           mouseDown = false;
           aiming = false;
@@ -2895,6 +2863,8 @@
             ui.help.hidden = !state.help;
             keys.clear();
             mouseDown = false;
+            aiming = false;
+            combat.suspend();
             return;
           }
           if (state.mode !== "playing" || state.help || !locked) return;
@@ -2954,46 +2924,18 @@
             "图形上下文丢失。请重新加载游戏，并尝试将画质设为“流畅”。";
         });
         function updateCamera(dt) {
-          const moving =
-              player.moving &&
-              player.grounded &&
-              !state.help &&
-              state.mode === "playing",
-            bob = moving
-              ? Math.sin(state.time * (player.sprinting ? 15 : 10)) * 0.035
-              : 0;
-          camera.position.set(player.x, player.y + 1.68 + bob, player.z);
-          camera.rotation.set(
-            player.pitch + player.recoil * 0.32,
-            player.yaw,
-            0,
-            "YXZ",
-          );
-          camera.fov = T.MathUtils.damp(
-            camera.fov,
-            aiming ? 56 : player.sprinting ? 82 : 76,
-            10,
-            dt,
-          );
+          const moving = player.moving && player.grounded && !state.help && state.mode === "playing";
+          const bob = moving ? Math.sin(state.time * (player.sprinting ? 15 : 10)) * .035 * (1 - combat.recoil.ads * .8) : 0;
+          const kick = combat.view(state.time);
+          camera.position.set(player.x + kick.x, player.y + 1.68 + bob + kick.y, player.z);
+          camera.rotation.set(clamp(player.pitch + kick.pitch, -1.5, 1.5), player.yaw + kick.yaw, kick.roll, 'YXZ');
+          const fov = T.MathUtils.lerp(player.sprinting ? 82 : 76, 56, combat.recoil.ads);
+          camera.fov = T.MathUtils.damp(camera.fov, fov, 18, dt);
           camera.updateProjectionMatrix();
-          const reloadDip =
-            player.reload > 0
-              ? Math.sin((1 - player.reload / 1.85) * Math.PI)
-              : 0;
-          gun.position.set(
-            aiming ? -0.235 : Math.sin(state.time * 10) * (moving ? 0.009 : 0),
-            -reloadDip * 0.25 - (player.sprinting ? 0.12 : 0),
-            -0.25 + player.recoil * 1.3,
-          );
-          gun.rotation.set(
-            -reloadDip * 0.45,
-            0,
-            -reloadDip * 0.45 + (moving ? Math.cos(state.time * 5) * 0.015 : 0),
-          );
-          flash.visible = state.flash > 0;
-          flash.rotation.y = state.time * 57;
-          weaponCamera.fov = aiming ? 48 : 58;
+          weaponCamera.fov = T.MathUtils.lerp(58, 48, combat.recoil.ads);
           weaponCamera.updateProjectionMatrix();
+          combat.pose({time: state.time, moving, sprinting: player.sprinting, reload: player.reload});
+          combat.renderHUD();
         }
         function simulate(dt) {
           state.time += dt;
@@ -3002,6 +2944,7 @@
             buildField();
             state.navTimer = 0.5;
           }
+          combat.tick(dt, aiming && player.reload <= 0);
           updatePlayer(dt);
           updateWave(dt);
           updateEnemies(dt);
@@ -3057,6 +3000,7 @@
             flashlight,
             toggleFlashlight,
             allyTracer,
+            combat, gun, muzzle, ejector, bolt, flash, weaponCamera, weaponScene,
             player,
             ally,
             enemies,
@@ -3089,6 +3033,9 @@
             updateUI,
             updateCamera,
             setLocked: (v) => (locked = v),
+            setAiming: v => { aiming = v; },
+            setFiring: v => { mouseDown = v; },
+            pause,
             snapshot: () => ({
               mode: state.mode,
               wave: state.wave,
