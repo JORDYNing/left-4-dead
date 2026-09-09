@@ -17,8 +17,8 @@ const suite=function(){
     g.toggleFlashlight();assert(!g.flashlight.visible&&!document.querySelector('#flashlight-tip').hidden,'Turning light off lost guidance');
     return {sceneLights:lights.length,flashlightRange:g.flashlight.distance};
   });
-  test('first enemy appears in one second, all six within 3.5 seconds',()=>{
-    reset();g.ally.hp=0;g.player.z=30.5;step(1);assert(g.enemies.length>=1,'First enemy late');step(2.5);assert(g.enemies.length===6&&g.state.pending===0,'First wave too slow');return {time:g.state.time,enemies:g.enemies.length};
+  test('first enemy appears in one second, all twelve within 3.5 seconds',()=>{
+    reset();g.ally.hp=0;g.player.z=30.5;step(1);assert(g.enemies.length>=1,'First enemy late');step(2.5);assert(g.enemies.length===12&&g.state.pending===0,'First wave too slow');return {time:g.state.time,enemies:g.enemies.length};
   });
   test('guide leads, waits, then resumes without advancing objectives early',()=>{
     reset();g.openGate();g.state.between=999;Object.assign(g.player,{x:0,z:25,y:0});Object.assign(g.ally,{x:1,z:24,y:0});
@@ -51,8 +51,8 @@ const suite=function(){
     const toward=new THREE.Vector3(a.getX(1),a.getY(1),a.getZ(1)).sub(p).normalize();assert(forward.dot(toward)>.985,'Gun points away from target');
     step(.04);assert(g.ally.upper.position.z>0,'Missing recoil');return {muzzleAlignment:forward.dot(toward),damage:hp-e.hp};
   });
-  test('three infected rigs retain distinct morphology after pool reuse',()=>{
-    reset();const infected=['walker','runner','brute'].map((t,i)=>g.spawnEnemy(t,{x:i*3,z:15}));
+  test('five infected rigs retain distinct morphology after pool reuse',()=>{
+    reset();const infected=['walker','runner','brute','guard','stalker'].map((t,i)=>g.spawnEnemy(t,{x:i*3,z:15}));
     assert(infected.every(e=>e.head.isBone&&e.meshes.some(m=>m.isSkinnedMesh&&m.material.map)&&e.actions.walk&&e.actions.attack&&e.actions.dead),'Imported textured/animated rig missing');
     const a=infected[0],b=infected[1],before=b.head.quaternion.clone();a.animate(0,true);a.animate(.1,true);assert(a.head.quaternion.angleTo(b.head.quaternion)>.01&&b.head.quaternion.angleTo(before)<.001,'Cloned skeletons share animation state');
     infected.forEach(e=>g.hurtEnemy(e,999,new THREE.Vector3(e.x,1,e.z)));
@@ -64,8 +64,8 @@ const suite=function(){
     const e=g.spawnEnemy('walker',{x:0,z:15});e.g.updateMatrixWorld(true);const headY=e.head.getWorldPosition(new THREE.Vector3()).y;
     g.hurtEnemy(e,999,new THREE.Vector3(0,1,15));assert(!g.enemies.includes(e)&&g.corpses.includes(e)&&e.g.visible&&e.activeAction==='dead','Death animation was skipped');
     step(3.5);e.g.updateMatrixWorld(true);const fallenY=e.head.getWorldPosition(new THREE.Vector3()).y;assert(fallenY<headY-.5,'Death pose did not fall');
-    for(let i=0;i<10;i++){const z=g.spawnEnemy('walker',{x:i,z:15});g.hurtEnemy(z,999,new THREE.Vector3(i,1,15));}
-    assert(g.corpses.length<=8,'Corpses exceed cap');step(5.1);assert(g.corpses.length===0,'Corpses never released');g.reset();assert(g.corpses.length===0,'Restart left corpses');return {headY,fallenY};
+    for(let i=0;i<20;i++){const z=g.spawnEnemy('walker',{x:i,z:15});g.hurtEnemy(z,999,new THREE.Vector3(i,1,15));}
+    assert(g.corpses.length<=16,'Corpses exceed cap');step(8.1);assert(g.corpses.length===0,'Corpses never released');g.reset();assert(g.corpses.length===0,'Restart left corpses');return {headY,fallenY};
   });
   reset();g.state.help=true;document.querySelector('#help').hidden=false;g.updateUI();
   return {passed:results.filter(r=>r.pass).length,total:results.length,results};

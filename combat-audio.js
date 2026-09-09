@@ -89,6 +89,13 @@ export function createCombatAudio({isEnabled = () => true, context = null} = {})
     try {
       const t = init(); master.gain.setValueAtTime(.68, t);
       if (kind === 'shot' || kind === 'allyshot') rifle(options.at ?? t, {...options, ally: kind === 'allyshot'});
+      else if (kind === 'bodyFall') {
+        const level=(options.heavy?.24:.13)*Math.min(1,8/Math.max(1,options.distance||1));
+        tone(t,.22,level,options.heavy?75:110,28);hiss(t,.18,level*.8,850,90,'lowpass');
+      } else if (kind === 'enemyCall') {
+        const level=.12*Math.min(1,10/Math.max(1,options.distance||1));
+        tone(t,.38,level,175,58,'sawtooth',options.pan||0);hiss(t,.4,level,600,160,'bandpass',options.pan||0,2);
+      }
       else if (kind === 'step') hiss(t, .105, .075, 290, 95, 'lowpass');
       else if (kind === 'casing') {
         tone(t, .055, .018, 3100, 2400, 'triangle', .5);

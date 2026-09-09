@@ -739,6 +739,8 @@
     </div>
     <script src="district.js"></script>
     <script type="importmap">{"imports":{"three":"./vendor/three/three.module.js"}}</script>
+    <script src="navigation.js"></script>
+    <script src="tactics.js"></script>
     <script src="guide.js"></script>
     <script>
       (async function loadEngine() {
@@ -1068,17 +1070,6 @@
         };
         colliders.push(gateCollider);
         occluders.push(gate);
-        sign("出口 ↑", 0, 4.4, 27.3, 4.9, 0.85, "#c9e7b6", "#345543");
-        for (let z = 30; z < 39; z += 3) {
-          const arrow = new T.Mesh(
-            new T.ConeGeometry(0.36, 1, 3),
-            mat("#b7cc8d"),
-          );
-          arrow.rotation.x = -Math.PI / 2;
-          arrow.position.set(0, 0.06, z);
-          arrow.scale.z = 0.04;
-          world.add(arrow);
-        }
         box(0, 4.1, 34, 4, 0.1, 0.2, "#e4efc8");
         for (let z = 31; z <= 37; z += 3) {
           const g = new T.Group();
@@ -1118,7 +1109,6 @@
         wall(-21, -19, 4, 0.5, 4);
         box(-26.5, 0.035, -8, 15, 0.06, 22, "#8d9988");
         sign("+ 医疗", -26, 3.6, 3.3, 8, 1, "#dce4cc", "#507967");
-        sign("← 医疗", -25, 2, 22, 7, 1, "#d6e2bd", "#426756");
         box(-32, 0.45, -8, 2, 0.9, 6, "#657c70", true);
         box(-22, 0.4, -14, 2, 0.8, 4, "#b0b6a0", true);
         box(-22, 0.91, -14, 1.7, 0.18, 3.8, "#697f6b");
@@ -1152,8 +1142,7 @@
         occluders.push(ramp);
         for (let z = -4; z > -12; z -= 1)
           box(20, (-3 - z) * 0.3 + 0.025, z, 5.9, 0.04, 0.06, "#bdba92");
-        sign("弹药 →", 25, 2.5, 22, 8, 1, "#e6cd9e", "#696a4d");
-        sign("弹药  ↑", 20, 3.5, -25.7, 5, 1);
+        sign("弹药", 20, 3.5, -25.7, 5, 1);
         box(30, 1.3, 10, 5, 2.6, 7, "#687b69", true);
         for (let z = 7; z <= 13; z += 0.5)
           box(27.45, 1.4, z, 0.06, 1.5, 0.12, "#435b4c");
@@ -1180,6 +1169,25 @@
           box(x, 3, -43, 3.6, 0.4, 3.6, "#40594b");
           box(x, 0.5, -36, 3, 1, 2, "#637767", true);
         }
+        // Encounter geometry: short transfers between alternating low information cover
+        // and tall line-of-sight breaks. Side lanes and every supply doorway stay open.
+        function tacticalCover(x,z,w,d,high=false,zone='street') {
+          const h=high?2.35:1.05;
+          box(x,h/2,z,w,h,d,high?'#626a63':'#898576',true);
+          const c=colliders[colliders.length-1];Object.assign(c,{cover:high?'high':'low',zone});
+          box(x,h+.035,z,w+.06,.07,d+.06,high?'#87897c':'#aba18a');
+          if(high){for(const dx of [-w*.38,w*.38])box(x+dx,h/2,z+d/2+.025,.07,h-.12,.04,'#494d47');}
+          else {for(const dx of [-w*.3,w*.3])box(x+dx,.7,z+d/2+.025,.35,.17,.04,'#bdab70');}
+        }
+        tacticalCover(5.5,21,2.6,1.2,false,'entry');
+        tacticalCover(-5.5,10.5,2,1.2,true,'entry');
+        tacticalCover(-.5,4,2.6,1.1,false);
+        tacticalCover(5,-2,2,1.4,true);
+        tacticalCover(1,-18,2.6,1.1,false);
+        tacticalCover(6,-23,2,1.4,true);
+        tacticalCover(-3,-34.5,2.8,1.1,false,'pump');
+        tacticalCover(2,-39,1.4,2,true,'pump');
+        tacticalCover(-2,-45,2.6,1.1,false,'pump');
         // Street furniture and a disabled bus, all built from simple geometry.
         function crate(x, z, w = 2, h = 1.1, d = 2) {
           box(x, h / 2, z, w, h, d, "#8e8967", true);
@@ -1273,6 +1281,7 @@
           halo.rotation.x = Math.PI / 2;
           halo.position.y = 0.05;
           supplies.push({ group, type, x, z, y, ready: 0, halo });
+          colliders.push({x,z,w:1.55,d:1.05,b:y,h:y+.92,active:true});
           sign(
             type === "med" ? "+ 医疗" : "弹药",
             x,
@@ -1292,6 +1301,15 @@
         supply(30, 15, "med");
         const district = createDistrict({T, world, scene, box, cylinder, mesh, mat, staticParts});
         for (const c of district.vehicleColliders) colliders.push({...c,b:0,h:1.55,active:true});
+        for(const c of district.sceneryColliders)colliders.push({...c,active:true});
+        // Existing crates, vehicles, pump tanks and destructible boards participate in cover selection.
+        for(const c of colliders)if(!c.cover&&c.h>=.75&&c.h<=3.4&&c.w<=8&&c.d<=9){c.cover=c.h<1.3?'low':'high';c.zone=c.z<-30?'pump':c.z>8?'entry':'street';}
+        // Broad-phase buckets keep every radius/edge sweep local instead of scanning the district.
+        const collisionBuckets=new Map();
+        for(const c of colliders)for(let x=Math.floor((c.x-c.w/2-1)/4);x<=Math.floor((c.x+c.w/2+1)/4);x++)
+          for(let z=Math.floor((c.z-c.d/2-1)/4);z<=Math.floor((c.z+c.d/2+1)/4);z++){
+            const key=x+','+z;if(!collisionBuckets.has(key))collisionBuckets.set(key,[]);collisionBuckets.get(key).push(c);
+          }
         batchStatic();
         // First-person weapon is rendered separately so nearby walls do not clip its silhouette.
         const weaponScene = new T.Scene(),
@@ -1384,6 +1402,7 @@
         // Shared geometry and a capped pool bound enemy/effect memory over an endless run.
         const types = {
           walker: {
+            name: "游荡者", radius: .5,
             hp: 76,
             speed: 1.65,
             damage: 9,
@@ -1392,6 +1411,7 @@
             points: 100,
           },
           runner: {
+            name: "疾行者", radius: .46,
             hp: 48,
             speed: 3.5,
             damage: 7,
@@ -1400,6 +1420,7 @@
             points: 140,
           },
           brute: {
+            name: "重锤", radius: .76,
             hp: 260,
             speed: 1.3,
             damage: 22,
@@ -1407,6 +1428,8 @@
             scale: 1.48,
             points: 300,
           },
+          guard: {name:'防暴感染者',radius:.52,hp:135,speed:1.7,damage:11,color:'#435967',scale:1.07,points:210},
+          stalker: {name:'潜伏者',radius:.46,hp:62,speed:2.8,damage:10,color:'#6b7163',scale:.94,points:180},
         };
         const actor = createCharacterFactory(T);
         const ally = Object.assign(actor("#37494a", "ally"), {
@@ -1460,6 +1483,7 @@
           wave: 0,
           completed: 0,
           pending: 0,
+          spawned: 0,
           spawnClock: 0,
           between: -1,
           gate: false,
@@ -1532,17 +1556,17 @@
         function blocked(x, z, y, r = 0.36, enemy = false) {
           if (x < -36.4 + r || x > 36.4 - r || z < -55.4 + r || z > 41.4 - r)
             return true;
-          for (const c of colliders) {
-            if (!c.active || y >= c.h - 0.06 || y + 1.65 < c.b) continue;
-            if (enemy && c.h <= 1.2) continue;
+          for (const c of (r<=1?collisionBuckets.get(Math.floor(x/4)+','+Math.floor(z/4))||[]:colliders)) {
+            if (!c.active || y >= c.h - 0.06 || y + (enemy ? 2.8 : 1.65) < c.b) continue;
+
             if (overlap(x, z, r, c)) return true;
           }
           return false;
         }
         function canMove(a, x, z, enemy = false) {
           const ground = floorAt(x, z),
-            r = enemy ? 0.4 : 0.36;
-          if (ground > a.y + 0.36) return false;
+            r = enemy ? (a.radius || .5) : .36;
+          if (ground > a.y + .25 || enemy && a.y - ground > .25) return false;
           return !blocked(x, z, Math.max(a.y, ground), r, enemy);
         }
         function move(a, dx, dz, enemy = false) {
@@ -1558,103 +1582,11 @@
             else if (a.grounded && Math.abs(a.y - ground) < 0.38) a.y = ground;
           }
         }
-        const NAV = 1.5,
-          NX = 49,
-          NZ = 65,
-          navWalk = new Uint8Array(NX * NZ),
-          field = new Int32Array(NX * NZ),
-          queue = new Int32Array(NX * NZ),
-          neighbors = [
-            [-1, 0],
-            [1, 0],
-            [0, -1],
-            [0, 1],
-            [-1, -1],
-            [1, -1],
-            [-1, 1],
-            [1, 1],
-          ];
-        const cell = (x, z) =>
-            clamp(Math.round((z + 55) / NAV), 0, NZ - 1) * NX +
-            clamp(Math.round((x + 36) / NAV), 0, NX - 1),
-          point = (i) => ({
-            x: (i % NX) * NAV - 36,
-            z: Math.floor(i / NX) * NAV - 55,
-          });
-        function buildNav() {
-          for (let i = 0; i < navWalk.length; i++) {
-            const p = point(i);
-            navWalk[i] = !blocked(p.x, p.z, floorAt(p.x, p.z), 0.55, true);
-          }
-          state.navTimer = 0;
-        }
-        function buildField() {
-          field.fill(-1);
-          let root = cell(player.x, player.z);
-          if (!navWalk[root]) {
-            let best = Infinity;
-            for (let i = 0; i < navWalk.length; i++) {
-              if (!navWalk[i]) continue;
-              const p = point(i),
-                d = (p.x - player.x) ** 2 + (p.z - player.z) ** 2;
-              if (d < best) {
-                root = i;
-                best = d;
-              }
-            }
-          }
-          let head = 0,
-            tail = 0;
-          queue[tail++] = root;
-          field[root] = 0;
-          while (head < tail) {
-            const i = queue[head++],
-              cx = i % NX,
-              cz = Math.floor(i / NX),
-              p = point(i),
-              h = floorAt(p.x, p.z);
-            for (const [dx, dz] of neighbors) {
-              const x = cx + dx,
-                z = cz + dz;
-              if (x < 0 || x >= NX || z < 0 || z >= NZ) continue;
-              const ni = z * NX + x;
-              if (!navWalk[ni] || field[ni] >= 0) continue;
-              if (dx && dz && (!navWalk[cz * NX + x] || !navWalk[z * NX + cx]))
-                continue;
-              const np = point(ni);
-              if (Math.abs(floorAt(np.x, np.z) - h) > 0.51) continue;
-              field[ni] = field[i] + 1;
-              queue[tail++] = ni;
-            }
-          }
-        }
-        function directionToPlayer(a) {
-          let index = cell(a.x, a.z),
-            best = field[index],
-            next = index;
-          const ix = index % NX,
-            iz = Math.floor(index / NX);
-          for (const [dx, dz] of neighbors) {
-            const x = ix + dx,
-              z = iz + dz;
-            if (x < 0 || x >= NX || z < 0 || z >= NZ) continue;
-            const n = z * NX + x;
-            if (field[n] >= 0 && (best < 0 || field[n] < best)) {
-              if (dx && dz && (!navWalk[iz * NX + x] || !navWalk[z * NX + ix]))
-                continue;
-              const p = point(n);
-              if (Math.abs(floorAt(p.x, p.z) - floorAt(a.x, a.z)) > 0.55)
-                continue;
-              best = field[n];
-              next = n;
-            }
-          }
-          const p = best <= 1 ? player : point(next),
-            dx = p.x - a.x,
-            dz = p.z - a.z,
-            len = Math.hypot(dx, dz) || 1;
-          return { x: dx / len, z: dz / len };
-        }
+        const navigation = createNavigation({blocked, floorAt});
+        const cell = navigation.cell, point = navigation.point;
+        const field = new Int32Array(73 * 97);
+        function buildNav() { navigation.invalidate(); state.navTimer = 0; }
+        function buildField() { field.set(navigation.fieldTo(player).cost); }
         function obstruction(origin, direction, max) {
           ray.set(origin, direction);
           ray.near = 0.03;
@@ -1673,40 +1605,17 @@
             distance = delta.length();
           return !obstruction(a, delta.normalize(), distance - 0.08);
         }
-        const spawns = [
-          [-30, -47],
-          [30, -46],
-          [-27, -26],
-          [30, -14],
-          [-30, 24],
-          [29, 26],
-          [0, -48],
-          [7, -37],
-        ];
-        function chooseSpawn() {
-          let best = null,
-            score = -Infinity;
-          for (const [x, z] of spawns) {
-            const d = Math.hypot(x - player.x, z - player.z);
-            if (d < (state.wave === 1 ? 20 : 14)) continue;
-            const dx = (x - player.x) / d,
-              dz = (z - player.z) / d,
-              dot = dx * -Math.sin(player.yaw) + dz * -Math.cos(player.yaw);
-            const seen = visible(
-              v3(player.x, player.y + 1.65, player.z),
-              v3(x, 1.3, z),
-            );
-            if (seen && dot > 0.52) continue;
-            const s = (seen ? 0 : 45) + d * 0.35 + Math.random() * 18;
-            if (s > score) {
-              score = s;
-              best = { x, z };
-            }
-          }
-          return best;
-        }
+        const tactics = createEnemyTactics({T, player, ally, enemies, colliders, navigation, floorAt, visible, state, toast, audio:combat.audio});
+        const chooseSpawn = radius => tactics.chooseSpawn(radius);
         function spawnEnemy(type, where) {
           const cfg = types[type];
+          if (!cfg || !where) return null;
+          // Debug/manual spawns obey the same clearance and height rules as wave spawns.
+          if (blocked(where.x,where.z,floorAt(where.x,where.z),cfg.radius,true)) {
+            const at=navigation.nearest(where,navigation.graph(cfg.radius));
+            if(at<0)return null;
+            where={...where,...navigation.point(at)};
+          }
           const poolIndex = enemyPool.findIndex(e => e.kind === type);
           let e = poolIndex < 0 ? null : enemyPool.splice(poolIndex, 1)[0];
           if (!e) {
@@ -1718,6 +1627,7 @@
           }
           Object.assign(e, {
             type,
+            radius: cfg.radius,
             x: where.x,
             z: where.z,
             y: floorAt(where.x, where.z),
@@ -1733,6 +1643,7 @@
             age: 0,
             vault: 0,
           });
+          tactics.assign(e,where);
           e.resetPose();
           e.bodyMat.emissive.setHex(0);
           e.g.scale.setScalar(cfg.scale);
@@ -1747,6 +1658,10 @@
           if (e.hp <= 0) return;
           const source = byAlly ? ally : player;
           const direction = shotDirection || v3(e.x - source.x, 0, e.z - source.z).normalize();
+          // Armored guards brace toward incoming fire; head and rear hits stay fully effective.
+          const facing=v3(-Math.sin(e.g.rotation.y),0,-Math.cos(e.g.rotation.y));
+          if(e.type==='guard'&&!headshot&&facing.dot(direction)<-.45)damage=Math.round(damage*.58);
+          tactics.hurt(e,source,damage);
           e.hp -= damage;
           e.flash = 0.12;
           e.bodyMat.emissive.set("#6b3425");
@@ -1756,10 +1671,24 @@
           combat.hit({point, damage, headshot, lethal, points: types[e.type].points, byAlly, direction});
           if (lethal) {
             enemies.splice(enemies.indexOf(e), 1);
+            tactics.release(e);
             e.die(); e.corpseTime = 0; e.deathFlash = .18;
+            e.deathVelocity=direction.clone().multiplyScalar((headshot?2.6:1.7)/(e.type==='brute'?1.8:1));
+            e.deathTilt=(headshot?-.1:.06)*(e.id%2?1:-1);
+            e.deathHeadshot=headshot;e.landed=false;
+            e.actions.dead.setEffectiveTimeScale(e.type==='brute'?.72:headshot?1.25:1);
+            // Choose the collapse orientation with the most free body-length space.
+            let fallYaw=e.g.rotation.y,best=-1;
+            for(const yaw of [e.g.rotation.y,e.g.rotation.y+Math.PI/2,e.g.rotation.y-Math.PI/2,e.g.rotation.y+Math.PI]) {
+              let free=0;for(let d=.2;d<1.8*types[e.type].scale;d+=.2){
+                if(!navigation.clear(e,{x:e.x-Math.sin(yaw)*d,z:e.z-Math.cos(yaw)*d},e.radius))break;free=d;
+              }
+              if(free>best){best=free;fallYaw=yaw;}
+            }
+            e.g.rotation.y=fallYaw;
             e.bodyMat.emissive.set('#793222');
             corpses.push(e);
-            if (corpses.length > 8) {
+            if (corpses.length > 16) {
               const old = corpses.shift(); old.g.visible = false; enemyPool.push(old);
             }
             if (byAlly) {
@@ -1772,12 +1701,23 @@
             if (!byAlly && Math.random() < 0.12) player.reserve = Math.min(240, player.reserve + 8);
           }
         }
+        const bloodPools=Array.from({length:20},()=>{
+          const mesh=new T.Mesh(new T.CircleGeometry(1,13),new T.MeshStandardMaterial({color:'#461b18',roughness:.9,transparent:true,opacity:.55,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-1}));
+          mesh.rotation.x=-Math.PI/2;mesh.visible=false;scene.add(mesh);return {mesh,life:0};
+        });
+        let bloodCursor=0;
+        function leaveBlood(e){
+          const p=bloodPools[bloodCursor++%bloodPools.length];p.life=18;p.mesh.visible=true;
+          p.mesh.position.set(e.x,e.y+.025,e.z);p.mesh.rotation.z=e.id*2.4;
+          p.mesh.scale.set(.52*types[e.type].scale,.32*types[e.type].scale,1);p.mesh.material.opacity=.55;
+        }
         function damageBarrier(b, amount) {
           if (b.hp <= 0) return;
           b.hp -= amount;
           if (b.hp <= 0) {
             b.group.visible = false;
             b.c.active = false;
+            buildNav();
             burst(v3(b.c.x, 0.65, b.c.z), 12);
             toast("路障已破");
           }
@@ -1813,7 +1753,9 @@
             wallHit = muzzleWall; targetHit = null; end = wallHit.point.clone();
             if (closeWall) start = end.clone().addScaledVector(toMuzzle.normalize(), -.03);
           }
-          player.ammo--; player.fire = .105 + (shot.first ? 0 : Math.min(0, player.fire));
+          player.ammo--;
+          tactics.hearShot(player);
+          player.fire = .105 + (shot.first ? 0 : Math.min(0, player.fire));
           combat.fire({...shot, origin, start, end});
           if (targetHit) {
             const target = targetHit.object.userData.targetParent || (targetHit.object.userData.target ? targetHit.object : null);
@@ -1824,7 +1766,8 @@
             } else {
               const e = targetHit.object.userData.enemy;
               if (e) {
-                const headshot = targetHit.point.y - e.y > 1.58 * types[e.type].scale;
+                const headCenter=e.head.getWorldPosition(v3());
+                const headshot=targetHit.point.distanceTo(headCenter)<.3*types[e.type].scale;
                 hurtEnemy(e, headshot ? 70 : 34, targetHit.point, false, headshot, dir);
               }
             }
@@ -1891,8 +1834,9 @@
         function startWave() {
           state.wave++;
           state.pending =
-            state.wave === 1 ? 6 : Math.min(52, 6 + state.wave * 3);
+            state.wave === 1 ? 12 : Math.min(72, 12 + state.wave * 4);
           state.spawnClock = 0;
+          state.spawned = 0;
           state.between = -1;
           toast("第 " + state.wave + " 波");
           sound("wave");
@@ -1905,27 +1849,17 @@
             return;
           }
           state.spawnClock -= dt;
-          if (
-            state.pending > 0 &&
-            state.spawnClock <= 0 &&
-            enemies.length < 28
-          ) {
-            const where = chooseSpawn();
-            if (where) {
-              const roll = Math.random(),
-                type =
-                  state.wave >= 3 && roll < 0.18
-                    ? "brute"
-                    : state.wave >= 2 && roll < 0.44
-                      ? "runner"
-                      : "walker";
-              spawnEnemy(type, where);
-              state.pending--;
-              state.spawnClock =
-                state.wave === 1
-                  ? 0.42
-                  : Math.max(0.24, 0.65 - state.wave * 0.025);
-            } else state.spawnClock = 0.5;
+          if (state.pending > 0 && state.spawnClock <= 0 && enemies.length < 48) {
+            // Small simultaneous groups use separate spatial sectors instead of one spawn queue.
+            const roster=['walker','runner','stalker','walker','guard','walker','runner','walker','stalker','brute','walker','guard'];
+            const batch=Math.min(state.pending,48-enemies.length,3+state.wave%2);
+            for(let i=0;i<batch;i++) {
+              const type=roster[state.spawned%roster.length],where=chooseSpawn(types[type].radius);
+              if(!where)break;
+              where.squad=Math.floor(state.spawned/4)+state.wave*100;
+              spawnEnemy(type,where);state.spawned++;state.pending--;
+            }
+            state.spawnClock=state.wave===1?.8:Math.max(.45,1.05-state.wave*.035);
           }
           if (state.pending === 0 && enemies.length === 0) {
             state.completed = state.wave;
@@ -1940,90 +1874,58 @@
           }
         }
         function updateEnemies(dt) {
-          for (const e of [...enemies]) {
-            e.age += dt;
-            e.attack -= dt;
-            e.flash -= dt;
-            if (e.flash <= 0) e.bodyMat.emissive.setHex(0);
-            const dp = Math.hypot(e.x - player.x, e.z - player.z),
-              da =
-                ally.hp > 0 ? Math.hypot(e.x - ally.x, e.z - ally.z) : Infinity;
-            let target = player,
-              dist = dp;
-            if (da < dp * 0.75 && da < 3) {
-              target = ally;
-              dist = da;
-            }
-            const dy = Math.abs(e.y - target.y),
-              reach = e.type === "brute" ? 1.75 : 1.15;
-            if (
-              dist < reach &&
-              dy < 1.5 &&
-              visible(
-                v3(e.x, e.y + 1.2, e.z),
-                v3(target.x, target.y + 1.2, target.z),
-              )
-            ) {
-              if (e.attack <= 0) {
-                e.attack = e.type === "brute" ? 1.45 : 1.1;
-                if (target === player) damagePlayer(e.damage);
-                else {
-                  ally.hp = Math.max(0, ally.hp - e.damage);
-                  if (ally.hp <= 0) {
-                    ally.down = 20;
-                    toast("林倒地");
-                  }
-                }
+          tactics.update(dt);
+          for (const e of enemies) {
+            e.age+=dt;e.attack-=dt;e.flash-=dt;
+            if(e.flash<=0)e.bodyMat.emissive.setHex(0);
+            const dp=Math.hypot(e.x-player.x,e.z-player.z),da=ally.hp>0?Math.hypot(e.x-ally.x,e.z-ally.z):Infinity;
+            const target=da<dp*.75&&da<3?ally:player,dist=target===ally?da:dp;
+            const reach=e.type==='brute'?1.75:1.15,dy=Math.abs(e.y-target.y);
+            const melee=dist<reach&&dy<1.5&&visible(v3(e.x,e.y+1.2,e.z),v3(target.x,target.y+1.2,target.z));
+            let walking=false,attacking=false;
+            if(melee) {
+              tactics.release(e);e.behavior='assault';
+              attacking=e.stagger<=0;
+              if(e.attack<=0&&attacking){e.attack=e.type==='brute'?1.45:1.1;
+                if(target===player)damagePlayer(e.damage);
+                else {ally.hp=Math.max(0,ally.hp-e.damage);if(ally.hp<=0){ally.down=20;toast('林倒地');}}
               }
-              e.g.rotation.y =
-                Math.atan2(target.x - e.x, target.z - e.z) + Math.PI;
+              e.g.rotation.y=Math.atan2(target.x-e.x,target.z-e.z)+Math.PI;
             } else {
-              let dir = directionToPlayer(e);
-              if (target === ally) {
-                const d = da || 1;
-                dir = { x: (ally.x - e.x) / d, z: (ally.z - e.z) / d };
+              const breach=barriers.find(b=>b.hp>0&&overlap(e.x,e.z,e.radius+.3,b.c)&&
+                (e.x-b.c.x)*(target.x-b.c.x)+(e.z-b.c.z)*(target.z-b.c.z)<0);
+              const dir=breach?{x:0,z:0,speed:0,distance:0}:tactics.steering(e,dt,target===ally?ally:null);
+              if(breach){attacking=true;e.g.rotation.y=Math.atan2(breach.c.x-e.x,breach.c.z-e.z)+Math.PI;
+                if(e.attack<=0){damageBarrier(breach,e.type==='brute'?65:14);e.attack=.9;}}
+
+              let sx=0,sz=0;
+              for(const other of enemies) {
+                if(other===e||Math.abs(other.y-e.y)>.7)continue;
+                let dx=e.x-other.x,dz=e.z-other.z,d=Math.hypot(dx,dz);
+                const separation=e.radius+other.radius+.65;
+                if(d<separation){if(d<.001){dx=Math.sin(e.id*2.4);dz=Math.cos(e.id*2.4);d=1;}
+                  const strength=(separation-d)*2.8;sx+=dx/d*strength;sz+=dz/d*strength;}
               }
-              let sx = 0,
-                sz = 0;
-              for (const other of enemies) {
-                if (other === e) continue;
-                const dx = e.x - other.x,
-                  dz = e.z - other.z,
-                  d = Math.hypot(dx, dz);
-                if (d > 0 && d < 0.85) {
-                  sx += (dx / d) * (0.85 - d) * 1.2;
-                  sz += (dz / d) * (0.85 - d) * 1.2;
-                }
-              }
-              move(
-                e,
-                (dir.x * e.speed + sx) * dt,
-                (dir.z * e.speed + sz) * dt,
-                true,
-              );
-              e.g.rotation.y = Math.atan2(dir.x, dir.z) + Math.PI;
-              for (const b of barriers) {
-                if (b.hp > 0 && overlap(e.x, e.z, 0.6, b.c)) {
-                  e.vault = 0.45;
-                  if (e.attack <= 0) {
-                    damageBarrier(b, e.type === "brute" ? 65 : 14);
-                    e.attack = 0.9;
-                  }
-                }
+              const before={x:e.x,z:e.z},travel=Math.min(e.speed*dir.speed*dt,dir.distance||0);
+              move(e,dir.x*travel+sx*dt,dir.z*travel+sz*dt,true);
+              const moved=Math.hypot(e.x-before.x,e.z-before.z);walking=moved>.001;
+              e.blockedTime=walking?0:e.blockedTime+dt;
+              if(e.blockedTime>1){e.routeTimer=0;e.decision=0;e.blockedTime=0;}
+              if(walking)e.g.rotation.y=Math.atan2(e.x-before.x,e.z-before.z)+Math.PI;
+              else if(e.coverPoint)e.g.rotation.y=Math.atan2(target.x-e.x,target.z-e.z)+Math.PI;
+              // Destructible boards stop movement until smashed; ordinary cover must be routed around.
+              for(const b of barriers)if(b.hp>0&&overlap(e.x,e.z,e.radius+.24,b.c)) {
+                attacking=true;if(e.attack<=0){damageBarrier(b,e.type==='brute'?65:14);e.attack=.9;}
               }
             }
-            e.vault = Math.max(0, e.vault - dt);
-            e.g.position.set(
-              e.x,
-              e.y +
-                (e.vault > 0 ? Math.sin((e.vault / 0.45) * Math.PI) * 0.8 : 0),
-              e.z,
-            );
-            e.g.rotation.z = Math.sin(e.age * 3) * 0.018;
-            e.animate(e.age, dist > reach, dist < reach + .4);
+            e.g.position.set(e.x,e.y,e.z);
+            e.g.rotation.z=Math.sin(e.age*3)*.018;
+            e.upper.position.y=T.MathUtils.damp(e.upper.position.y,e.crouching?-.4:0,10,dt);
+            e.upper.rotation.x=T.MathUtils.damp(e.upper.rotation.x,e.stagger>0?-.12:0,12,dt);
+            e.animate(e.age,walking,attacking);
           }
         }
-        const guide = createGuide({T, scene, player, ally, state, blocked, floorAt, move, toast});
+        const guide = createGuide({T, scene, player, ally, state, blocked, floorAt, move, toast, navigation});
         const allyTracer = new T.Line(new T.BufferGeometry().setFromPoints([v3(), v3()]),
           new T.LineBasicMaterial({color:'#f3cf8b',transparent:true,opacity:.8}));
         allyTracer.visible=false;allyTracer.frustumCulled=false;scene.add(allyTracer);
@@ -2108,7 +2010,7 @@
             (keys.has("ShiftLeft") || keys.has("ShiftRight")) &&
             player.stamina > 2 &&
             !aiming;
-          const speed = player.sprinting ? 7.2 : aiming ? 2.65 : 4.5;
+          const speed = player.sprinting ? 5.4 : aiming ? 2.2 : 3.4;
           if (len) {
             x /= len;
             z /= len;
@@ -2148,13 +2050,29 @@
           if (mouseDown && !player.sprinting) shoot();
         }
         function updateEffects(dt) {
-          for (let i = corpses.length - 1; i >= 0; i--) {
-            const e = corpses[i]; e.corpseTime += dt; e.mixer.update(dt);
-            e.deathFlash = Math.max(0, (e.deathFlash || 0) - dt);
-            e.bodyMat.emissive.setRGB(.3, .075, .035).multiplyScalar(e.deathFlash / .18);
-            if (e.corpseTime > 4.2) e.g.position.y = e.y - (e.corpseTime - 4.2) * 1.2;
-            if (e.corpseTime > 5) { e.g.visible = false; corpses.splice(i, 1); enemyPool.push(e); }
+          for (let i=corpses.length-1;i>=0;i--) {
+            const e=corpses[i];e.corpseTime+=dt;e.mixer.update(dt);
+            if(e.corpseTime<.65) {
+              move(e,e.deathVelocity.x*dt,e.deathVelocity.z*dt,true);
+              e.deathVelocity.multiplyScalar(Math.exp(-7*dt));
+              e.g.rotation.z=e.deathTilt*Math.sin(Math.min(1,e.corpseTime/.65)*Math.PI);
+            }
+            e.upper.position.y=T.MathUtils.damp(e.upper.position.y,0,12,dt);
+            e.upper.rotation.x=T.MathUtils.damp(e.upper.rotation.x,0,12,dt);
+            e.g.position.set(e.x,e.y,e.z);
+            const landing=e.type==='brute'?1.1:e.deathHeadshot?.52:.72;
+            if(!e.landed&&e.corpseTime>landing){
+              e.landed=true;
+              combat.audio.play('bodyFall',{heavy:e.type==='brute',distance:Math.hypot(e.x-player.x,e.z-player.z)});
+              burst(v3(e.x,e.y+.08,e.z),e.type==='brute'?12:6,true);
+              leaveBlood(e);
+            }
+            e.deathFlash=Math.max(0,e.deathFlash-dt);
+            e.bodyMat.emissive.setRGB(.3,.075,.035).multiplyScalar(e.deathFlash/.18);
+            if(e.corpseTime>6.5)e.setOpacity(Math.max(0,1-(e.corpseTime-6.5)/1.5));
+            if(e.corpseTime>8){e.g.visible=false;corpses.splice(i,1);enemyPool.push(e);}
           }
+          for(const p of bloodPools)if(p.life>0){p.life-=dt;p.mesh.material.opacity=Math.min(.55,p.life*.22);if(p.life<=0)p.mesh.visible=false;}
           state.toast = Math.max(0, state.toast - dt);
           state.hurt = Math.max(0, state.hurt - dt);
           for (let i = effects.length - 1; i >= 0; i--) {
@@ -2325,12 +2243,15 @@
         }
         function reset() {
           combat.reset();
+          tactics.reset();
+          bloodPools.forEach(p=>{p.life=0;p.mesh.visible=false;});
           for (const e of [...enemies, ...corpses]) {
             e.g.visible = false;
             enemyPool.push(e);
           }
           enemies.length = 0;
           corpses.length = 0;
+          for(const e of enemyPool)e.bodyMat.emissive.setHex(0);
           ally.resetPose();
           effects.length = 0;
           particleMesh.count = 0;
@@ -2341,6 +2262,7 @@
             wave: 0,
             completed: 0,
             pending: 0,
+            spawned: 0,
             spawnClock: 0,
             between: -1,
             gate: false,
@@ -2384,6 +2306,7 @@
           ally.target=null;ally.shot=0;ally.aim=0;ally.animate(0,false);allyTracer.visible=false;
           guide.reset();state.flashlightUsed=false;
           gateGroup.position.y = 0;
+          gateGroup.updateMatrixWorld(true);
           gateCollider.active = true;
           barriers.forEach((b) => {
             b.hp = 110;
@@ -2646,6 +2569,7 @@
           window.__game = {
             state,
             guide,
+            tactics, navigation, types, colliders, bloodPools, updateEnemies, updateEffects, visible, damageBarrier,
             scene,
             district,
             flashlight,

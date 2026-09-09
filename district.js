@@ -1,5 +1,6 @@
 /* Original Los Angeles quarantine district. All artwork is generated locally. */
 window.createDistrict = function ({T, world, scene, box, cylinder, mesh, mat, staticParts}) {
+  const sceneryColliders=[];
   let seed = 1046;
   const random = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296);
   const stone = '#84766a', rust = '#704536', dark = '#292c2b';
@@ -44,6 +45,7 @@ window.createDistrict = function ({T, world, scene, box, cylinder, mesh, mat, st
   };
   function palm(x,z,h,lean=1) {
     const top=[x+lean,h,z+.45];
+    sceneryColliders.push({x:x+lean*.04,z:z+.04,w:.52,d:.52,b:0,h:3});
     for(let i=0;i<10;i++) {
       const t=i/10,t2=(i+1)/10;
       addBeam([x+lean*t*t,h*t,z+.45*t],[x+lean*t2*t2,h*t2,z+.45*t2],.19-i*.008,'#70604a');
@@ -68,6 +70,7 @@ window.createDistrict = function ({T, world, scene, box, cylinder, mesh, mat, st
   for(let i=0;i<6;i++) {
     const side=i%2?-1:1,x=side*34.7,z=24-Math.floor(i/2)*24,h=6.3+(i%3)*1.3;
     box(x,h/2,z,3.2,h,18,plaster);
+    sceneryColliders.push({x:x-side*.25,z,w:3.8,d:18.2,b:0,h});
     box(x-side*1.7,h+.12,z,.38,.3,18.5,'#b4a08c');
     box(x-side*1.69,3.5,z,.28,.35,18,'#66534a');
     for(let j=-1;j<=1;j++) {
@@ -162,6 +165,7 @@ window.createDistrict = function ({T, world, scene, box, cylinder, mesh, mat, st
   // Matching colliders use conservative footprints and are supplied to the game below.
   const vehicleColliders=[{x:28,z:29,w:2.5,d:4.7},{x:-30,z:-39,w:2.5,d:4.7},{x:29,z:-3,w:3,d:4.8}];
   for(const [x,z] of [[-9,11],[10,-17],[-29,22],[29,21]]) {
+    sceneryColliders.push({x,z,w:.68,d:.5,b:0,h:1});
     cylinder(x,.44,z,.17,.82,'#8d4c35');cylinder(x,.9,z,.24,.15,'#964f35');
     box(x,.54,z,.65,.15,.18,'#8d4c35');
   }
@@ -172,6 +176,7 @@ window.createDistrict = function ({T, world, scene, box, cylinder, mesh, mat, st
     m.position.set(x,.1+random()*.18,z);m.scale.set(1,.35+random()*.4,1);m.rotation.set(random(),random(),random());staticParts.push(m);
   }
   for(const [x,z] of [[-16,-15],[15,5],[-35,-27],[35,-40]]) {
+    sceneryColliders.push({x,z,w:3.5,d:4.2,b:0,h:1.2});
     for(let i=0;i<7;i++) {
       const m=box(x+(random()-.5)*2,.12+random()*.65,z+(random()-.5)*3,.7+random(),.28+random()*.45,.8,stone);
       m.rotation.set(random()*.5,random()*3,random()*.6);
@@ -181,7 +186,7 @@ window.createDistrict = function ({T, world, scene, box, cylinder, mesh, mat, st
   // Utility wires and downtown silhouette against the smoky night.
   for(const side of [-1,1]) {
     for(let i=0;i<4;i++) {
-      const x=side*29,z=24-i*23;cylinder(x,4.8,z,.11,9.6,'#5b4938');box(x,9,z,2.7,.14,.16,'#4a4034');
+      const x=side*29,z=24-i*23;sceneryColliders.push({x,z,w:.3,d:.3,b:0,h:9.6});cylinder(x,4.8,z,.11,9.6,'#5b4938');box(x,9,z,2.7,.14,.16,'#4a4034');
       if(i<3)for(const offset of [-.8,.8])for(let j=0;j<8;j++){
         const t=j/8,u=(j+1)/8;
         addBeam([x+offset,9-Math.sin(t*Math.PI)*1.1,z-t*23],[x+offset,9-Math.sin(u*Math.PI)*1.1,z-u*23],.016,'#34362f');
@@ -208,7 +213,7 @@ window.createDistrict = function ({T, world, scene, box, cylinder, mesh, mat, st
   const particle=new T.Object3D();
   for(let i=0;i<180;i++){particle.position.set(random()*70-35,random()*16,random()*95-53);particle.updateMatrix();ash.setMatrixAt(i,particle.matrix);}
   ash.receiveShadow=true;scene.add(ash);
-  return {vehicleColliders,update(time,camera){
+  return {vehicleColliders,sceneryColliders,update(time,camera){
     for(const p of smoke){const t=(time*.09+p.phase)%1;p.s.position.set(p.x+t*2.4,1+t*10,p.z+Math.sin(t*3)*.6);p.s.scale.setScalar(1.3+t*5);p.s.material.opacity=.48*Math.sin(t*Math.PI);if(camera)p.s.quaternion.copy(camera.quaternion);p.s.rotateZ(t*.5);}
     ash.position.x=Math.sin(time*.09)*2;ash.position.y=-time*.13%4;
   }};
